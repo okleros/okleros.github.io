@@ -17,7 +17,8 @@
 	varying vec2 v_texCoord;
 
 	void main() {
-		color = fcolor;
+		//color = fcolor;
+		v_texCoord = texCoord;
 		gl_Position = position;
 	}
 </script>
@@ -26,12 +27,11 @@
 	precision mediump float;
 	varying vec4 color;
 	varying vec2 v_texCoord;
-	float joao = 3.0;
+
+	uniform sampler2D tex;
 
 	void main() {
-		gl_FragColor = color;
-		//gl_FragColor = vec4(floor(color.x * 100.0 / joao + 0.5) / 100.0, floor(color.y * 100.0 / joao + 0.5) / 100.0, floor(color.z * 100.0 / joao + 0.5) / 100.0, color.w);
-		//gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+		gl_FragColor = texture2D(tex, v_texCoord);
 	}
 </script>
 

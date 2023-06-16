@@ -36,8 +36,18 @@ function createProgram(gl, vtxsh, fragsh) {
 }
 
 var gl;
+var teximg;
 
 function init() {
+	teximg = new Image();
+	teximg.src = "kleros.jpg";
+
+	teximg.onload = function() {
+		draw();
+	}
+}
+
+function draw() {
 	var canvas = document.getElementById("glcanvas");
 	gl = getGL(canvas);
 
@@ -58,7 +68,7 @@ function init() {
 												 0.5, -0.5,  1.0,  1.0,
 												 0.5,  0.5,  1.0,  0.0,
 												-0.5,  0.5,  0.0,  0.0,
-												 									]);
+												 						]);
 
 		var bufferPtr = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, bufferPtr);
@@ -69,15 +79,27 @@ function init() {
 								positionPtr, // attribute location
 								2          , // number of elements per attribute
 								gl.FLOAT   , // type of elements
-								false      , // whether or not values are normalized
-								6 * 4      , // size of an individual block of data
+								gl.FALSE      , // whether or not values are normalized
+								4 * 4      , // size of an individual block of data
 								0 * 4       // offset from the beginning of the data to this specific attribute
 											);
 		gl.enableVertexAttribArray(positionPtr);
 		
-		var fcolorPtr = gl.getAttribLocation(prog, "fcolor");
-		gl.vertexAttribPointer(fcolorPtr, 4, gl.FLOAT, false, 6 * 4, 2 * 4);
-		gl.enableVertexAttribArray(fcolorPtr);
+		var texCoordPtr = gl.getAttribLocation(prog, "texCoord");
+		gl.enableVertexAttribArray(texCoordPtr);
+		gl.vertexAttribPointer(texCoordPtr, 2, gl.FLOAT, gl.FALSE, 4 * 4, 2 * 4);
+
+		// submit image to gpu
+		var tex0 = gl.createTexture();
+		gl.activeTexture(gl.TEXTURE0);
+		gl.bindTexture(gl.TEXTURE_2D, tex0);
+		// setting texture parameters
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, teximg);
 
 		gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
