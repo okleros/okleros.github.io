@@ -1,8 +1,9 @@
-var gl, prog;
+var gl, prog, coordTriangle, i4, numElementos;
 var teximg = [];
-texSrc = ["kleros.jpg", "cube.jpg"];
+texSrc = ["1.jpg", "2.jpg", "3.jpg", "4.jpg", "5.jpg", "6.jpg"];
 loadedTexturesCount = 0;
 var angle = 0;
+var i4;
 
 function getGL(canvas) {
 	var gl;
@@ -82,19 +83,60 @@ function initGL() {
 		
 		gl.clearColor(0, 0, 0, 1);
 		
+		gl.enable(gl.CULL_FACE);
+		gl.enable(gl.DEPTH_TEST);
 		gl.enable(gl.BLEND);
 		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 	}
 }
 
 function configScene() {
-		var coordTriangle = new Float32Array([
-												-0.5,  0.5,  0.0,  0.0,
-												-0.5, -0.5,  0.0,  1.0,
-												 0.5, -0.5,  1.0,  1.0,
-												 0.5,  0.5,  1.0,  0.0,
-												-0.5,  0.5,  0.0,  0.0,
-												 						]);
+		i4 = math.identity(4)
+		coordTriangle = new Float32Array([
+											// FRENTE
+											-0.5, -0.5, -0.5,  0.0,  1.0,
+											-0.5,  0.5, -0.5,  0.0,  0.0,
+											 0.5,  0.5, -0.5,  1.0,  0.0,
+											 0.5, -0.5, -0.5,  1.0,  1.0,
+											-0.5, -0.5, -0.5,  0.0,  1.0,
+											 
+											// COSTAS
+											 0.5, -0.5,  0.5,  0.0,  1.0,
+											 0.5,  0.5,  0.5,  0.0,  0.0,
+											-0.5,  0.5,  0.5,  1.0,  0.0,
+											-0.5, -0.5,  0.5,  1.0,  1.0,
+											 0.5, -0.5,  0.5,  0.0,  1.0,
+
+											// DIREITA
+											 0.5, -0.5, -0.5,  0.0,  1.0,
+											 0.5,  0.5, -0.5,  0.0,  0.0,
+											 0.5,  0.5,  0.5,  1.0,  0.0,
+											 0.5, -0.5,  0.5,  1.0,  1.0,
+											 0.5, -0.5, -0.5,  0.0,  1.0,
+
+											// ESQUERDA
+											-0.5, -0.5,  0.5,  0.0,  1.0,
+											-0.5,  0.5,  0.5,  0.0,  0.0,
+											-0.5,  0.5, -0.5,  1.0,  0.0,
+											-0.5, -0.5, -0.5,  1.0,  1.0,
+											-0.5, -0.5,  0.5,  0.0,  1.0,
+
+											// CIMA
+											 0.5,  0.5, -0.5,  0.0,  1.0,
+											-0.5,  0.5, -0.5,  0.0,  0.0,
+											-0.5,  0.5,  0.5,  1.0,  0.0,
+											 0.5,  0.5,  0.5,  1.0,  1.0,
+											 0.5,  0.5, -0.5,  0.0,  1.0,
+
+											// BAIXO
+											-0.5, -0.5, -0.5,  0.0,  1.0,
+											 0.5, -0.5, -0.5,  0.0,  0.0,
+											 0.5, -0.5,  0.5,  1.0,  0.0,
+											-0.5, -0.5,  0.5,  1.0,  1.0,
+											-0.5, -0.5, -0.5,  0.0,  1.0,
+											 								]);
+
+		numElementos = 5;
 
 		var bufferPtr = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, bufferPtr);
@@ -103,39 +145,41 @@ function configScene() {
 		var positionPtr = gl.getAttribLocation(prog, "position");
 		gl.vertexAttribPointer( 
 								positionPtr, // attribute location
-								2          , // number of elements per attribute
+								3          , // number of elements per attribute
 								gl.FLOAT   , // type of elements
 								gl.FALSE      , // whether or not values are normalized
-								4 * 4      , // size of an individual block of data
+								numElementos * 4      , // size of an individual block of data
 								0 * 4       // offset from the beginning of the data to this specific attribute
 											);
 		gl.enableVertexAttribArray(positionPtr);
 		
 		var texCoordPtr = gl.getAttribLocation(prog, "texCoord");
 		gl.enableVertexAttribArray(texCoordPtr);
-		gl.vertexAttribPointer(texCoordPtr, 2, gl.FLOAT, gl.FALSE, 4 * 4, 2 * 4);
+		gl.vertexAttribPointer(texCoordPtr, 2, gl.FLOAT, gl.FALSE, numElementos * 4, 3 * 4);
 
-		// submit image to gpu
-		var tex0 = gl.createTexture();
-		gl.activeTexture(gl.TEXTURE0);
-		gl.bindTexture(gl.TEXTURE_2D, tex0);
-		// setting texture parameters
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, teximg[0]);
+		// // submit image to gpu
+		// var tex0 = gl.createTexture();
+		// gl.activeTexture(gl.TEXTURE0);
+		// gl.bindTexture(gl.TEXTURE_2D, tex0);
+		// // setting texture parameters
+		// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+		// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+		// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+		// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+		// gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, teximg[0]);
 
-		// submit image to gpu
-		var tex1 = gl.createTexture();
-		gl.activeTexture(gl.TEXTURE1);
-		gl.bindTexture(gl.TEXTURE_2D, tex1);
-		// setting texture parameters
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, teximg[1]);
+		for (var i = 0; i < texSrc.length; i++) {
+			// submit image to gpu
+			var tex = gl.createTexture();
+			gl.activeTexture(gl.TEXTURE0 + i);
+			gl.bindTexture(gl.TEXTURE_2D, tex);
+			// setting texture parameters
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, teximg[i]);
+		}
 
 }
 
@@ -170,14 +214,25 @@ function draw() {
 
 	gl.uniformMatrix4fv(transfPtr, gl.FALSE, math.flatten(matTransf).toArray());
 
-	gl.clear(gl.COLOR_BUFFER_BIT);
+	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	
 	var texPtr = gl.getUniformLocation(prog, "tex");
 	
-	gl.uniform1i(texPtr, 0);
-	gl.drawArrays(gl.TRIANGLES, 0, 3);
-	gl.uniform1i(texPtr, 1);
-	gl.drawArrays(gl.TRIANGLES, 2, 3);
+	// gl.uniform1i(texPtr, 0);
+	// gl.drawArrays(gl.TRIANGLES, 0, 3);
+	// gl.uniform1i(texPtr, 1);
+	// gl.drawArrays(gl.TRIANGLES, 2, 3);
+	// gl.uniform1i(texPtr, 0);
+	// gl.drawArrays(gl.TRIANGLES, 5, 3);
+	// gl.uniform1i(texPtr, 1);
+	// gl.drawArrays(gl.TRIANGLES, 7, 3);
+
+	for (var i = 0; i < coordTriangle.length; i += 5) {
+		gl.uniform1i(texPtr, math.floor(i / numElementos));
+		gl.drawArrays(gl.TRIANGLES, i, 3);
+		//gl.uniform1i(texPtr, 0);
+		gl.drawArrays(gl.TRIANGLES, i + 2, 3);
+	}
 
 	angle += 1;
 	requestAnimationFrame(draw);
