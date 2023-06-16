@@ -1,3 +1,9 @@
+var gl, prog;
+var teximg = [];
+texSrc = ["kleros.jpg", "cube.jpg"];
+loadedTexturesCount = 0;
+var angle = 0;
+
 function getGL(canvas) {
 	var gl;
 	
@@ -35,20 +41,28 @@ function createProgram(gl, vtxsh, fragsh) {
 	gl.deleteProgram(prog);
 }
 
-var gl;
-var teximg;
-
 function init() {
-	teximg = new Image();
-	teximg.crossOrigin = "anonymous";
-	teximg.src = "kleros.jpg";
+	for (var i = 0; i < texSrc.length; i++) {
+		teximg[i] = new Image();
+		teximg[i].crossOrigin = "anonymous";
+		teximg[i].src = texSrc[i];
+		teximg[i].onload = function() {
+			loadedTexturesCount++;
+			loadTextures();
+		}
+	}
 
-	teximg.onload = function() {
+}
+
+function loadTextures() {
+	if (loadedTexturesCount == teximg.length) {
+		initGL();
+		configScene();
 		draw();
 	}
 }
 
-function draw() {
+function initGL() {
 	var canvas = document.getElementById("glcanvas");
 	gl = getGL(canvas);
 
@@ -59,15 +73,26 @@ function draw() {
 		var vtxsh = createShader(gl, gl.VERTEX_SHADER, vtxshSource);
 		var fragsh = createShader(gl, gl.FRAGMENT_SHADER, fragshSource);
 
-		var prog = createProgram(gl, vtxsh, fragsh);
+		prog = createProgram(gl, vtxsh, fragsh);
 
 		gl.useProgram(prog);
 
+
+		gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+		
+		gl.clearColor(0, 0, 0, 1);
+		
+		gl.enable(gl.BLEND);
+		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+	}
+}
+
+function configScene() {
 		var coordTriangle = new Float32Array([
 												-0.5,  0.5,  0.0,  0.0,
-												-0.5, -0.5,  0.0,  2.0,
-												 0.5, -0.5,  2.0,  2.0,
-												 0.5,  0.5,  2.0,  0.0,
+												-0.5, -0.5,  0.0,  1.0,
+												 0.5, -0.5,  1.0,  1.0,
+												 0.5,  0.5,  1.0,  0.0,
 												-0.5,  0.5,  0.0,  0.0,
 												 						]);
 
@@ -99,17 +124,61 @@ function draw() {
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, teximg[0]);
 
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, teximg);
+		// submit image to gpu
+		var tex1 = gl.createTexture();
+		gl.activeTexture(gl.TEXTURE1);
+		gl.bindTexture(gl.TEXTURE_2D, tex1);
+		// setting texture parameters
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, teximg[1]);
 
-		gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+}
 
-		gl.clearColor(0, 0, 0, 1);
-		gl.clear(gl.COLOR_BUFFER_BIT);
-		gl.enable(gl.BLEND);
-		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+function draw() {
+	var a = angle * (math.PI / 180);
 
-		gl.drawArrays(gl.TRIANGLES, 0, 3);
-		gl.drawArrays(gl.TRIANGLES, 2, 3);
-	}
+	var matrotX = math.matrix([  
+								[1,               0,             0,   0],
+								[0,     math.cos(a),  -math.sin(a),   0],
+							    [0,     math.sin(a),   math.cos(a),   0],
+						 		[0,               0,             0,   1]
+								   										]);
+	
+	var matrotY = math.matrix([  
+								[math.cos(a),    0,   -math.sin(a),   0],
+							    [          0,    1,              0,   0],
+							    [math.sin(a),    0,    math.cos(a),   0],
+							    [          0,    0,              0,   1]
+							              								]);
+	
+	var matrotZ = math.matrix([ 
+								[math.cos(a),   -math.sin(a),    0,   0],
+							    [math.sin(a),    math.cos(a),    0,   0],
+							    [          0,              0,    1,   0],
+							    [          0,              0,    0,   1]
+							     										]);
+
+	var transfPtr = gl.getUniformLocation(prog, "transf");
+
+	var matTransf = math.multiply(matrotX, math.multiply(matrotY, matrotZ));
+	//console.log(matTransf);
+
+	gl.uniformMatrix4fv(transfPtr, gl.FALSE, math.flatten(matTransf).toArray());
+
+	gl.clear(gl.COLOR_BUFFER_BIT);
+	
+	var texPtr = gl.getUniformLocation(prog, "tex");
+	
+	gl.uniform1i(texPtr, 0);
+	gl.drawArrays(gl.TRIANGLES, 0, 3);
+	gl.uniform1i(texPtr, 1);
+	gl.drawArrays(gl.TRIANGLES, 2, 3);
+
+	angle += 1;
+	requestAnimationFrame(draw);
 }

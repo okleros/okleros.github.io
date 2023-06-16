@@ -13,6 +13,7 @@
 	attribute vec4 position;
 	//attribute vec4 fcolor;
 	attribute vec2 texCoord;
+	uniform mat4 transf;
 
 	//varying vec4 color;
 	varying vec2 v_texCoord;
@@ -20,7 +21,7 @@
 	void main() {
 		//color = fcolor;
 		v_texCoord = texCoord;
-		gl_Position = position;
+		gl_Position = transf * position;
 	}
 </script>
 
