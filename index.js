@@ -40,7 +40,6 @@ var teximg;
 
 function init() {
 	teximg = new Image();
-	teximg.crossOrigin = "anonymous";
 	teximg.src = "kleros.jpg";
 
 	teximg.onload = function() {
