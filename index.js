@@ -175,11 +175,12 @@ function configScene() {
 			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, teximg[i]);
 		}
 
-		var dfPtr = gl.getUniformLocation(prog, "df");
-		gl.uniform1f(dfPtr, df);
 }
 
 function draw() {
+	var dfPtr = gl.getUniformLocation(prog, "df");
+	gl.uniform1f(dfPtr, df);
+	
 	var a = angle * math.PI / 180.0;
 
 	var matrotX = math.matrix([  
