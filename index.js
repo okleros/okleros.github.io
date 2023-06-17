@@ -1,9 +1,10 @@
 var gl, prog, coordTriangle, i4, numElementos;
 var teximg = [];
-texSrc = ["1.jpg", "2.jpg", "3.jpg", "4.jpg", "5.jpg", "6.jpg"];
+texSrc = ["1.jpg", "2.jpg", "3.jpg", "4.jpg", "5.jpg", "6.jpg", "7.jpg"];
 loadedTexturesCount = 0;
 var angle = 0;
-var i4;
+var df = -6.0;
+var rotFreq = 1;
 
 function getGL(canvas) {
 	var gl;
@@ -78,14 +79,11 @@ function initGL() {
 
 		gl.useProgram(prog);
 
-
 		gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 		
 		gl.clearColor(0, 0, 0, 1);
 		
-		gl.enable(gl.CULL_FACE);
-		gl.enable(gl.DEPTH_TEST);
-		gl.enable(gl.BLEND);
+		gl.enable(gl.CULL_FACE || gl.DEPTH_TEST || gl.BLEND);
 		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 	}
 }
@@ -94,46 +92,46 @@ function configScene() {
 		i4 = math.identity(4)
 		coordTriangle = new Float32Array([
 											// FRENTE
-											-0.5, -0.5, -0.5,  0.0,  1.0,
-											-0.5,  0.5, -0.5,  0.0,  0.0,
-											 0.5,  0.5, -0.5,  1.0,  0.0,
-											 0.5, -0.5, -0.5,  1.0,  1.0,
-											-0.5, -0.5, -0.5,  0.0,  1.0,
+											-0.5,  0.5,  0.5,  0.0,  0.0,
+											-0.5, -0.5,  0.5,  0.0,  1.0,
+											 0.5, -0.5,  0.5,  1.0,  1.0,
+											 0.5,  0.5,  0.5,  1.0,  0.0,
+											-0.5,  0.5,  0.5,  0.0,  0.0,
 											 
 											// COSTAS
-											 0.5, -0.5,  0.5,  0.0,  1.0,
-											 0.5,  0.5,  0.5,  0.0,  0.0,
-											-0.5,  0.5,  0.5,  1.0,  0.0,
-											-0.5, -0.5,  0.5,  1.0,  1.0,
-											 0.5, -0.5,  0.5,  0.0,  1.0,
+											 0.5,  0.5, -0.5,  0.0,  0.0,
+											 0.5, -0.5, -0.5,  0.0,  1.0,
+											-0.5, -0.5, -0.5,  1.0,  1.0,
+											-0.5,  0.5, -0.5,  1.0,  0.0,
+											 0.5,  0.5, -0.5,  0.0,  0.0,
 
 											// DIREITA
-											 0.5, -0.5, -0.5,  0.0,  1.0,
-											 0.5,  0.5, -0.5,  0.0,  0.0,
-											 0.5,  0.5,  0.5,  1.0,  0.0,
-											 0.5, -0.5,  0.5,  1.0,  1.0,
-											 0.5, -0.5, -0.5,  0.0,  1.0,
+											 0.5,  0.5,  0.5,  0.0,  0.0,
+											 0.5, -0.5,  0.5,  0.0,  1.0,
+											 0.5, -0.5, -0.5,  1.0,  1.0,
+											 0.5,  0.5, -0.5,  1.0,  0.0,
+											 0.5,  0.5,  0.5,  0.0,  0.0,
 
 											// ESQUERDA
-											-0.5, -0.5,  0.5,  0.0,  1.0,
-											-0.5,  0.5,  0.5,  0.0,  0.0,
-											-0.5,  0.5, -0.5,  1.0,  0.0,
-											-0.5, -0.5, -0.5,  1.0,  1.0,
-											-0.5, -0.5,  0.5,  0.0,  1.0,
+											-0.5,  0.5, -0.5,  0.0,  0.0,
+											-0.5, -0.5, -0.5,  0.0,  1.0,
+											-0.5, -0.5,  0.5,  1.0,  1.0,
+											-0.5,  0.5,  0.5,  1.0,  0.0,
+											-0.5,  0.5, -0.5,  0.0,  0.0,
 
 											// CIMA
-											 0.5,  0.5, -0.5,  0.0,  1.0,
 											-0.5,  0.5, -0.5,  0.0,  0.0,
-											-0.5,  0.5,  0.5,  1.0,  0.0,
+											-0.5,  0.5,  0.5,  0.0,  1.0,
 											 0.5,  0.5,  0.5,  1.0,  1.0,
-											 0.5,  0.5, -0.5,  0.0,  1.0,
+											 0.5,  0.5, -0.5,  1.0,  0.0,
+											-0.5,  0.5, -0.5,  0.0,  0.0,
 
 											// BAIXO
+											-0.5, -0.5,  0.5,  0.0,  0.0,
 											-0.5, -0.5, -0.5,  0.0,  1.0,
-											 0.5, -0.5, -0.5,  0.0,  0.0,
+											 0.5, -0.5, -0.5,  1.0,  1.0,
 											 0.5, -0.5,  0.5,  1.0,  0.0,
-											-0.5, -0.5,  0.5,  1.0,  1.0,
-											-0.5, -0.5, -0.5,  0.0,  1.0,
+											-0.5, -0.5,  0.5,  0.0,  0.0,
 											 								]);
 
 		numElementos = 5;
@@ -143,30 +141,26 @@ function configScene() {
 		gl.bufferData(gl.ARRAY_BUFFER, coordTriangle, gl.STATIC_DRAW);
 
 		var positionPtr = gl.getAttribLocation(prog, "position");
-		gl.vertexAttribPointer( 
-								positionPtr, // attribute location
-								3          , // number of elements per attribute
-								gl.FLOAT   , // type of elements
-								gl.FALSE      , // whether or not values are normalized
-								numElementos * 4      , // size of an individual block of data
-								0 * 4       // offset from the beginning of the data to this specific attribute
-											);
 		gl.enableVertexAttribArray(positionPtr);
+		gl.vertexAttribPointer( 
+								positionPtr     , // attribute location
+								3               , // number of elements per attribute
+								gl.FLOAT        , // type of elements
+								gl.FALSE        , // whether or not values are normalized
+								numElementos * 4, // size of an individual block of data
+								0 * 4             // offset from the beginning of the data to this specific attribute
+												);
 		
 		var texCoordPtr = gl.getAttribLocation(prog, "texCoord");
 		gl.enableVertexAttribArray(texCoordPtr);
-		gl.vertexAttribPointer(texCoordPtr, 2, gl.FLOAT, gl.FALSE, numElementos * 4, 3 * 4);
-
-		// // submit image to gpu
-		// var tex0 = gl.createTexture();
-		// gl.activeTexture(gl.TEXTURE0);
-		// gl.bindTexture(gl.TEXTURE_2D, tex0);
-		// // setting texture parameters
-		// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-		// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-		// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-		// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-		// gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, teximg[0]);
+		gl.vertexAttribPointer(
+								texCoordPtr     , // attribute location
+								2               , // number of elements per attribute
+								gl.FLOAT        , // type of elements
+								gl.FALSE        , // whether or not values are normalized
+								numElementos * 4, // size of an individual block of data
+								3 * 4             // offset from the beginning of the data to this specific attribute
+												);
 
 		for (var i = 0; i < texSrc.length; i++) {
 			// submit image to gpu
@@ -181,15 +175,17 @@ function configScene() {
 			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, teximg[i]);
 		}
 
+		var dfPtr = gl.getUniformLocation(prog, "df");
+		gl.uniform1f(dfPtr, df);
 }
 
 function draw() {
-	var a = angle * (math.PI / 180);
+	var a = angle * math.PI / 180.0;
 
 	var matrotX = math.matrix([  
 								[1,               0,             0,   0],
-								[0,     math.cos(a),  -math.sin(a),   0],
-							    [0,     math.sin(a),   math.cos(a),   0],
+								[0,     math.cos(a*2),  -math.sin(a*2),   0],
+							    [0,     math.sin(a*2),   math.cos(a*2),   0],
 						 		[0,               0,             0,   1]
 								   										]);
 	
@@ -210,30 +206,20 @@ function draw() {
 	var transfPtr = gl.getUniformLocation(prog, "transf");
 
 	var matTransf = math.multiply(matrotX, math.multiply(matrotY, matrotZ));
-	//console.log(matTransf);
 
 	gl.uniformMatrix4fv(transfPtr, gl.FALSE, math.flatten(matTransf).toArray());
 
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	
 	var texPtr = gl.getUniformLocation(prog, "tex");
-	
-	// gl.uniform1i(texPtr, 0);
-	// gl.drawArrays(gl.TRIANGLES, 0, 3);
-	// gl.uniform1i(texPtr, 1);
-	// gl.drawArrays(gl.TRIANGLES, 2, 3);
-	// gl.uniform1i(texPtr, 0);
-	// gl.drawArrays(gl.TRIANGLES, 5, 3);
-	// gl.uniform1i(texPtr, 1);
-	// gl.drawArrays(gl.TRIANGLES, 7, 3);
 
-	for (var i = 0; i < coordTriangle.length; i += 5) {
-		gl.uniform1i(texPtr, math.floor(i / numElementos));
+	for (var i = 0; i < coordTriangle.length; i += numElementos) {
+		gl.uniform1i(texPtr, 6);
+		// gl.uniform1i(texPtr, math.floor(i / numElementos));
 		gl.drawArrays(gl.TRIANGLES, i, 3);
-		//gl.uniform1i(texPtr, 0);
 		gl.drawArrays(gl.TRIANGLES, i + 2, 3);
 	}
 
-	angle += 1;
+	angle += rotFreq;
 	requestAnimationFrame(draw);
 }
