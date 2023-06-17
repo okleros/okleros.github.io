@@ -1,10 +1,10 @@
 var gl, prog, coordTriangle, i4, numElementos;
 var teximg = [];
-texSrc = ["front.jpg", "back.jpg", "right.jpg", "left.jpg", "top.jpg", "bottom.jpg", "7.jpg"];
+texSrc = ["back.jpg", "left.jpg", "bottom.jpg", "left.jpg", "top.jpg", "bottom.jpg", "7.jpg"];
 loadedTexturesCount = 0;
 var angle = 0;
-var df = -6.0;
 var rotFreq = 1;
+var canvas;
 
 function getGL(canvas) {
 	var gl;
@@ -65,7 +65,7 @@ function loadTextures() {
 }
 
 function initGL() {
-	var canvas = document.getElementById("glcanvas");
+	canvas = document.getElementById("glcanvas");
 	gl = getGL(canvas);
 
 	if (gl) {
@@ -92,53 +92,76 @@ function configScene() {
 		i4 = math.identity(4)
 		coordTriangle = new Float32Array([
 											// FRENTE
-											-0.5,  0.5,  0.5,  0.0,  0.0,
-											-0.5, -0.5,  0.5,  0.0,  1.0,
-											 0.5, -0.5,  0.5,  1.0,  1.0,
-											 0.5,  0.5,  0.5,  1.0,  0.0,
-											-0.5,  0.5,  0.5,  0.0,  0.0,
+											-0.5,  0.5, -0.5,  0.0,  0.0,
+											 0.5,  0.5, -0.5,  1.0,  0.0,
+											 0.5, -0.5, -0.5,  1.0,  1.0,
+											-0.5, -0.5, -0.5,  0.0,  1.0,
+											-0.5,  0.5, -0.5,  0.0,  0.0,
 											 
 											// COSTAS
-											 0.5,  0.5, -0.5,  0.0,  0.0,
-											 0.5, -0.5, -0.5,  0.0,  1.0,
-											-0.5, -0.5, -0.5,  1.0,  1.0,
-											-0.5,  0.5, -0.5,  1.0,  0.0,
-											 0.5,  0.5, -0.5,  0.0,  0.0,
-
-											// DIREITA
 											 0.5,  0.5,  0.5,  0.0,  0.0,
 											 0.5, -0.5,  0.5,  0.0,  1.0,
-											 0.5, -0.5, -0.5,  1.0,  1.0,
-											 0.5,  0.5, -0.5,  1.0,  0.0,
-											 0.5,  0.5,  0.5,  0.0,  0.0,
-
-											// ESQUERDA
-											-0.5,  0.5, -0.5,  0.0,  0.0,
-											-0.5, -0.5, -0.5,  0.0,  1.0,
 											-0.5, -0.5,  0.5,  1.0,  1.0,
 											-0.5,  0.5,  0.5,  1.0,  0.0,
-											-0.5,  0.5, -0.5,  0.0,  0.0,
+											 0.5,  0.5,  0.5,  0.0,  0.0,
 
-											// CIMA
-											-0.5,  0.5, -0.5,  0.0,  0.0,
-											-0.5,  0.5,  0.5,  0.0,  1.0,
-											 0.5,  0.5,  0.5,  1.0,  1.0,
-											 0.5,  0.5, -0.5,  1.0,  0.0,
-											-0.5,  0.5, -0.5,  0.0,  0.0,
+											// DIREITA
+											 0.5,  0.5, -0.5,  0.0,  0.0,
+											 0.5, -0.5, -0.5,  0.0,  1.0,
+											 0.5, -0.5,  0.5,  1.0,  1.0,
+											 0.5,  0.5,  0.5,  1.0,  0.0,
+											 0.5,  0.5, -0.5,  0.0,  0.0,
 
-											// BAIXO
-											-0.5, -0.5,  0.5,  0.0,  0.0,
-											-0.5, -0.5, -0.5,  0.0,  1.0,
-											 0.5, -0.5, -0.5,  1.0,  1.0,
-											 0.5, -0.5,  0.5,  1.0,  0.0,
-											-0.5, -0.5,  0.5,  0.0,  0.0,
+											// // ESQUERDA
+											//  0.0,  1.0,  1.0,  0.0,  0.0,
+											//  0.0,  0.0,  1.0,  0.0,  1.0,
+											//  0.0,  0.0,  0.0,  1.0,  1.0,
+											//  0.0,  1.0,  0.0,  1.0,  0.0,
+											//  0.0,  1.0,  1.0,  0.0,  0.0,
+
+											// // CIMA
+											// -0.5,  0.5, -0.5,  0.0,  0.0,
+											// -0.5,  0.5,  0.5,  0.0,  1.0,
+											//  0.5,  0.5,  0.5,  1.0,  1.0,
+											//  0.5,  0.5, -0.5,  1.0,  0.0,
+											// -0.5,  0.5, -0.5,  0.0,  0.0,
+
+											// // BAIXO
+											//  0.0,  0.0,  0.0,  0.0,  0.0,
+											//  0.0,  0.0,  1.0,  0.0,  1.0,
+											//  1.0,  0.0,  1.0,  1.0,  1.0,
+											//  1.0,  0.0,  0.0,  1.0,  0.0,
+											//  0.0,  0.0,  0.0,  0.0,  0.0,
 											 								]);
+
+		var coordTriangles = new Float32Array([
+        					//Quad 1
+        					-0.5,  0.5, 0.0, 1.0, 0.0, 
+        					 0.5,  0.5, 0.0, 0.0, 0.0, 
+        					 0.5, -0.5, 0.0, 0.0, 1.0,
+        					-0.5, -0.5, 0.0, 1.0, 1.0, 
+        					-0.5,  0.5, 0.0, 1.0, 0.0,
+        					
+        					//Quad 2
+        					-0.5,  0.5, 1.0, 1.0, 0.0,
+        					-0.5,  0.5, 0.0, 0.0, 0.0, 
+        					-0.5, -0.5, 0.0, 0.0, 1.0, 
+        					-0.5, -0.5, 1.0, 1.0, 1.0, 
+        					-0.5,  0.5, 1.0, 1.0, 0.0,
+        					
+        					//Quad 3
+        					-0.5, -0.5, 0.0, 1.0, 0.0,
+        					 0.5, -0.5, 0.0, 0.0, 0.0, 
+        					 0.5, -0.5, 1.0, 0.0, 1.0, 
+        					-0.5, -0.5, 1.0, 1.0, 1.0, 
+        					-0.5, -0.5, 0.0, 1.0, 0.0
+        									 ]);
 
 		numElementos = 5;
 
 		var bufferPtr = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, bufferPtr);
-		gl.bufferData(gl.ARRAY_BUFFER, coordTriangle, gl.STATIC_DRAW);
+		gl.bufferData(gl.ARRAY_BUFFER, coordTriangles, gl.STATIC_DRAW);
 
 		var positionPtr = gl.getAttribLocation(prog, "position");
 		gl.enableVertexAttribArray(positionPtr);
@@ -177,16 +200,44 @@ function configScene() {
 
 }
 
+function createPerspective(fovy, aspec, near, far) {
+	fovy *= math.PI / 180.0
+
+	var fy = 1.0 / math.tan(fovy / 2);
+	var fx = fy / aspec;
+
+	var B = -2 * far * near / (far - near);
+	var A = -(far + near) / (far - near);
+
+	var proj = math.matrix([
+							 [ fx,  0.0,  0.0,  0.0],
+							 [0.0,   fy,  0.0,  0.0],
+							 [0.0,  0.0,    A,    B],
+							 [0.0,  0.0, -1.0,  0.0]
+													]);
+
+	return proj;
+}
+
 function draw() {
-	var dfPtr = gl.getUniformLocation(prog, "df");
-	gl.uniform1f(dfPtr, df);
+	// var dfPtr = gl.getUniformLocation(prog, "df");
+	// gl.uniform1f(dfPtr, df);
+
+	var push = math.matrix([
+							 [1.0,  0.0,  0.0,  0.0],
+							 [0.0,  1.0,  0.0,  0.0],
+							 [0.0,  0.0,  1.0, -5.5],
+							 [0.0,  0.0,  0.0,  1.0]
+													]);
 	
 	var a = angle * math.PI / 180.0;
 
+	var mproj = createPerspective(45, canvas.width / canvas.height, 0.1, 50);
+
 	var matrotX = math.matrix([  
 								[1,               0,             0,   0],
-								[0,     math.cos(a*2),  -math.sin(a*2),   0],
-							    [0,     math.sin(a*2),   math.cos(a*2),   0],
+								[0,     math.cos(a),  -math.sin(a),   0],
+							    [0,     math.sin(a),   math.cos(a),   0],
 						 		[0,               0,             0,   1]
 								   										]);
 	
@@ -206,9 +257,13 @@ function draw() {
 
 	var transfPtr = gl.getUniformLocation(prog, "transf");
 
-	var matTransf = math.multiply(matrotX, math.multiply(matrotY, matrotZ));
+	var matTransf = matrotY;
 
-	gl.uniformMatrix4fv(transfPtr, gl.FALSE, math.flatten(matTransf).toArray());
+	// matTransf = math.multiply(matrotX, matTransf);
+	matTransf = math.multiply(push, matTransf);
+	matTransf = math.multiply(mproj, matTransf);
+
+	gl.uniformMatrix4fv(transfPtr, gl.FALSE, math.flatten(math.transpose(matTransf)).toArray());
 
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	
