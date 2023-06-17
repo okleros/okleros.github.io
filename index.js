@@ -1,6 +1,6 @@
 var gl, prog, coordTriangle, i4, numElementos;
 var teximg = [];
-texSrc = ["1.jpg", "2.jpg", "3.jpg", "4.jpg", "5.jpg", "6.jpg", "7.jpg"];
+texSrc = ["front.jpg", "back.jpg", "right.jpg", "left.jpg", "top.jpg", "bottom.jpg", "7.jpg"];
 loadedTexturesCount = 0;
 var angle = 0;
 var df = -6.0;
@@ -215,8 +215,8 @@ function draw() {
 	var texPtr = gl.getUniformLocation(prog, "tex");
 
 	for (var i = 0; i < coordTriangle.length; i += numElementos) {
-		gl.uniform1i(texPtr, 6);
-		// gl.uniform1i(texPtr, math.floor(i / numElementos));
+		// gl.uniform1i(texPtr, 6);
+		gl.uniform1i(texPtr, math.floor(i / numElementos));
 		gl.drawArrays(gl.TRIANGLES, i, 3);
 		gl.drawArrays(gl.TRIANGLES, i + 2, 3);
 	}
