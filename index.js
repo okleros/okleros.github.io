@@ -1,6 +1,6 @@
 var gl, prog, coordTriangle, i4, numElementos;
 var teximg = [];
-texSrc = ["back.jpg", "left.jpg", "bottom.jpg", "left.jpg", "top.jpg", "bottom.jpg", "7.jpg"];
+texSrc = ["back.jpg", "left.jpg", "bottom.jpg", "front.jpg", "top.jpg", "bottom.jpg", "7.jpg"];
 loadedTexturesCount = 0;
 var angle = 0;
 var rotFreq = 1;
@@ -154,7 +154,13 @@ function configScene() {
         					 0.5, -0.5, 0.0, 0.0, 0.0, 
         					 0.5, -0.5, 1.0, 0.0, 1.0, 
         					-0.5, -0.5, 1.0, 1.0, 1.0, 
-        					-0.5, -0.5, 0.0, 1.0, 0.0
+        					-0.5, -0.5, 0.0, 1.0, 0.0,
+
+        					 0.5,  0.5, 1.0, 1.0, 0.0, 
+        					-0.5,  0.5, 1.0, 0.0, 0.0, 
+        					-0.5, -0.5, 1.0, 0.0, 1.0, 
+        					 0.5, -0.5, 1.0, 1.0, 1.0,
+        					 0.5,  0.5, 1.0, 1.0, 0.0,
         									 ]);
 
 		numElementos = 5;
