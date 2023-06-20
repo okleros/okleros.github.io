@@ -1,14 +1,13 @@
-var gl, prog, coordTriangle, i4, numElementos;
+var gl, prog, coordTriangle, i4, numElementos, canvas, normals;
 var teximg = [];
 texSrc = ["front.jpg", "back.jpg", "right.jpg", "left.jpg", "top.jpg", "bottom.jpg", "7.jpg", "Chapa Ada Lovelace.jpg"];
 loadedTexturesCount = 0;
 var angle = 0;
 var rotFreq = 1;
-var canvas;
 
 function loadSource(url) {
   const xhr = new XMLHttpRequest();
-  xhr.open('GET', url, false);
+  xhr.open('GET', url + "?please-do-not-cache" + math.random(), false);
   xhr.send();
 
   if (xhr.status === 200) {
@@ -60,7 +59,6 @@ function createProgram(gl, vtxsh, fragsh) {
 	gl.deleteProgram(prog);
 }
 
-
 function init() {
 	for (var i = 0; i < texSrc.length; i++) {
 		teximg[i] = new Image();
@@ -99,7 +97,7 @@ function initGL() {
 
 		gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 		
-		gl.clearColor(.3, .3, .3, 1);
+		gl.clearColor(.3176470588, .3176470588, .3176470588, 1);
 		
 		gl.enable(gl.BLEND);
 		gl.enable(gl.CULL_FACE);
@@ -157,6 +155,8 @@ function configScene() {
 											-0.5, -0.5,  0.5,  0.0,  0.0,
 											 								]);
 
+		normals = new Float32Array([]);
+
 		numElementos = 5;
 
 		var bufferPtr = gl.createBuffer();
@@ -197,7 +197,6 @@ function configScene() {
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, teximg[i]);
 		}
-
 }
 
 function createCamera(pos, target, up) {
@@ -252,7 +251,7 @@ function draw() {
 	// var dfPtr = gl.getUniformLocation(prog, "df");
 	// gl.uniform1f(dfPtr, df);
 
-	var cam = createCamera([4, 4, 4], [0, 0, 0], [5, 6, 5]);
+	var cam = createCamera([.5, .5, 5.0], [0.0, 0.0, 0.0], [.5, 1.5, 5.0]/*[4, 4, 4], [0, 0, 0], [4, 5, 4]*/);
 
 	var push = math.matrix([
 							 [1.0,  0.0,  0.0,  0.0],
@@ -263,7 +262,7 @@ function draw() {
 	
 	var a = rad(angle);
 
-	var mproj = createPerspective(20, canvas.width / canvas.height, 1e-4, 1e4);
+	var mproj = createPerspective(45, canvas.width / canvas.height, 1e-4, 1e4);
 
 	var matrotX = math.matrix([  
 								[1,               0,             0,   0],
