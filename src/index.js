@@ -6,6 +6,19 @@ var angle = 0;
 var rotFreq = 1;
 var canvas;
 
+function loadSource(url) {
+  const xhr = new XMLHttpRequest();
+  xhr.open('GET', url, false);
+  xhr.send();
+
+  if (xhr.status === 200) {
+    return xhr.responseText;
+  } else {
+    console.error('Error loading shader:', xhr.status);
+    return null;
+  }
+}
+
 function rad(angle) {
 	return angle * math.PI / 180;
 }
@@ -47,6 +60,7 @@ function createProgram(gl, vtxsh, fragsh) {
 	gl.deleteProgram(prog);
 }
 
+
 function init() {
 	for (var i = 0; i < texSrc.length; i++) {
 		teximg[i] = new Image();
@@ -73,8 +87,8 @@ function initGL() {
 	gl = getGL(canvas);
 
 	if (gl) {
-		var vtxshSource = document.getElementById("vertex-shader").text;
-		var fragshSource = document.getElementById("fragment-shader").text;
+		var vtxshSource = loadSource("src/vtxsh.glsl"); /*document.getElementById("vertex-shader").text;*/
+		var fragshSource = loadSource("src/fragsh.glsl"); /*document.getElementById("fragment-shader").text;*/
 
 		var vtxsh = createShader(gl, gl.VERTEX_SHADER, vtxshSource);
 		var fragsh = createShader(gl, gl.FRAGMENT_SHADER, fragshSource);
@@ -85,7 +99,7 @@ function initGL() {
 
 		gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 		
-		gl.clearColor(.9, .9, .9, 1);
+		gl.clearColor(.3, .3, .3, 1);
 		
 		gl.enable(gl.BLEND);
 		gl.enable(gl.CULL_FACE);
@@ -186,6 +200,35 @@ function configScene() {
 
 }
 
+function createCamera(pos, target, up) {
+	var zc = math.subtract(pos, target);
+	zc = math.divide(zc, math.norm(zc));
+
+	var yt = math.subtract(up, pos);
+	yt = math.divide(yt, math.norm(yt));
+
+	var xc = math.cross(yt, zc);
+	xc = math.divide(xc, math.norm(xc));
+
+	var yc = math.cross(zc, xc);
+	yc = math.divide(yc, math.norm(yc));
+
+	var mt = math.inv(math.transpose(math.matrix([xc, yc, zc])));
+	mt = math.resize(mt, [4, 4], 0);
+	mt._data[3][3] = 1;
+
+	var mov = math.matrix([
+							[1,   0,   0,   -pos[0]],
+							[0,   1,   0,   -pos[1]],
+							[0,   0,   1,   -pos[2]],
+							[0,   0,   0,        1]
+													]);
+
+	var cam = math.multiply(mt, mov);
+
+	return cam;
+}
+
 function createPerspective(fovy, aspec, near, far) {
 	fovy = rad(fovy);
 
@@ -209,16 +252,18 @@ function draw() {
 	// var dfPtr = gl.getUniformLocation(prog, "df");
 	// gl.uniform1f(dfPtr, df);
 
+	var cam = createCamera([4, 4, 4], [0, 0, 0], [5, 6, 5]);
+
 	var push = math.matrix([
 							 [1.0,  0.0,  0.0,  0.0],
 							 [0.0,  1.0,  0.0,  0.0],
-							 [0.0,  0.0,  1.0, -2.5],
+							 [0.0,  0.0,  1.0, -5.0],
 							 [0.0,  0.0,  0.0,  1.0]
 													]);
 	
 	var a = rad(angle);
 
-	var mproj = createPerspective(45, canvas.width / canvas.height, 0.1, 1000);
+	var mproj = createPerspective(20, canvas.width / canvas.height, 1e-4, 1e4);
 
 	var matrotX = math.matrix([  
 								[1,               0,             0,   0],
@@ -243,20 +288,23 @@ function draw() {
 
 	var transfPtr = gl.getUniformLocation(prog, "transf");
 
-	var matTransf = math.multiply(matrotX, matrotY);
+	var matTransf = math.identity(4)
 
-	// matTransf = math.multiply(matrotX, matTransf);
-	matTransf = math.multiply(push, matTransf);
+	// matTransf = math.multiply(matTransf, matrotX);
+	matTransf = math.multiply(matTransf, matrotY);
+	matTransf = math.multiply(matTransf, matrotZ);
+
+	matTransf = math.multiply(cam, matTransf);
 	matTransf = math.multiply(mproj, matTransf);
 
 	gl.uniformMatrix4fv(transfPtr, gl.FALSE, math.flatten(math.transpose(matTransf)).toArray());
 
-	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+	gl.clear(gl.COLOR_BUFFER_BIT || gl.DEPTH_BUFFER_BIT);
 	
 	var texPtr = gl.getUniformLocation(prog, "tex");
 
 	for (var i = 0; i < coordTriangle.length; i += numElementos) {
-		gl.uniform1i(texPtr, 7);
+		gl.uniform1i(texPtr, 6);
 		// gl.uniform1i(texPtr, math.floor(i / numElementos));
 		gl.drawArrays(gl.TRIANGLES, i, 3);
 		gl.drawArrays(gl.TRIANGLES, i + 2, 3);
