@@ -7,6 +7,7 @@ uniform sampler2D tex;
 
 varying vec2 v_texCoord;
 varying vec3 v_normal;
+varying vec3 v_lightColor;
 
 vec4 rgb2hsv(vec4 c) {
 	vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
@@ -20,5 +21,7 @@ vec4 rgb2hsv(vec4 c) {
 
 void main() {
 	// gl_FragColor = rgb2hsv(vec4(.5, .5, 0, 1));
-	gl_FragColor =/*  vec4(1.0, 0.7, 0.0, 1.0) *  */texture2D(tex, v_texCoord);
+    float brightness = max(0.2, dot(normalize(lightDirection), normalize(v_normal)));
+    vec4 color = texture2D(tex, v_texCoord);
+	gl_FragColor =vec4(v_lightColor * (brightness * color.rgb), color.a);
 }

@@ -1,6 +1,6 @@
 var gl, prog, coordTriangle, i4, numElementos, canvas, normals;
 var teximg = [];
-texSrc = ["front.jpg", "back.jpg", "right.jpg", "left.jpg", "top.jpg", "bottom.jpg", "7.jpg", "Chapa Ada Lovelace.jpg"];
+texSrc = ["front.jpg", "back.jpg", "right.jpg", "left.jpg", "top.jpg", "bottom.jpg", "7.jpg"];
 loadedTexturesCount = 0;
 var angle = 0;
 var rotFreq = 1;
@@ -155,7 +155,43 @@ function configScene() {
 											-0.5, -0.5,  0.5,  0.0,  0.0,
 											 								]);
 
-		normals = new Float32Array([]);
+		normals = new Float32Array([
+																0.0,   0.0,   1.0,
+																0.0,   0.0,   1.0,
+																0.0,   0.0,   1.0,
+																0.0,   0.0,   1.0,
+																0.0,   0.0,   1.0,
+
+																0.0,   0.0,  -1.0,
+																0.0,   0.0,  -1.0,
+																0.0,   0.0,  -1.0,
+																0.0,   0.0,  -1.0,
+																0.0,   0.0,  -1.0,
+																
+																1.0,   0.0,   0.0,
+																1.0,   0.0,   0.0,
+																1.0,   0.0,   0.0,
+																1.0,   0.0,   0.0,
+																1.0,   0.0,   0.0,
+																
+															 -1.0,   0.0,   0.0,
+															 -1.0,   0.0,   0.0,
+															 -1.0,   0.0,   0.0,
+															 -1.0,   0.0,   0.0,
+															 -1.0,   0.0,   0.0,
+																
+																0.0,   1.0,   0.0,
+																0.0,   1.0,   0.0,
+																0.0,   1.0,   0.0,
+																0.0,   1.0,   0.0,
+																0.0,   1.0,   0.0,
+																
+																0.0,  -1.0,   0.0,
+																0.0,  -1.0,   0.0,
+																0.0,  -1.0,   0.0,
+																0.0,  -1.0,   0.0,
+																0.0,  -1.0,   0.0,
+																									]);
 
 		numElementos = 5;
 
@@ -184,6 +220,24 @@ function configScene() {
 								numElementos * 4, // size of an individual block of data
 								3 * 4             // offset from the beginning of the data to this specific attribute
 												);
+
+		var bufnormalPtr = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, bufnormalPtr);
+    gl.bufferData(gl.ARRAY_BUFFER, normals, gl.STATIC_DRAW);
+
+		var normalPtr = gl.getAttribLocation(prog, "normal");
+		console.log(positionPtr);
+		gl.enableVertexAttribArray(normalPtr);
+		gl.vertexAttribPointer( 
+								normalPtr       , // attribute location
+								3               , // number of elements per attribute
+								gl.FLOAT        , // type of elements
+								gl.FALSE        , // whether or not values are normalized
+								3 * 4, // size of an individual block of data
+								0 * 4             // offset from the beginning of the data to this specific attribute
+												);
+		var lightColorPtr = gl.getUniformLocation(prog, "lightColor");
+		gl.uniform3fv(lightColorPtr, [1.0, 1.0, 1.0]);
 
 		for (var i = 0; i < texSrc.length; i++) {
 			// submit image to gpu
@@ -214,7 +268,7 @@ function createCamera(pos, target, up) {
 
 	var mt = math.inv(math.transpose(math.matrix([xc, yc, zc])));
 	mt = math.resize(mt, [4, 4], 0);
-	mt._data[3][3] = 1;
+	mt._data[3][3] = 1.0;
 
 	var mov = math.matrix([
 							[1,   0,   0,   -pos[0]],
@@ -251,7 +305,7 @@ function draw() {
 	// var dfPtr = gl.getUniformLocation(prog, "df");
 	// gl.uniform1f(dfPtr, df);
 
-	var cam = createCamera([.5, .5, 5.0], [0.0, 0.0, 0.0], [.5, 1.5, 5.0]/*[4, 4, 4], [0, 0, 0], [4, 5, 4]*/);
+	var cam = createCamera(/*[.5, .5, 5.0], [0.0, 0.0, 0.0], [.5, 1.5, 5.0]*/ [4, 4, 4], [0, 0, 0], [4, 5, 4]);
 
 	var push = math.matrix([
 							 [1.0,  0.0,  0.0,  0.0],
@@ -286,21 +340,27 @@ function draw() {
 							     										]);
 
 	var transfPtr = gl.getUniformLocation(prog, "transf");
+	var transfProjPtr = gl.getUniformLocation(prog, "transfProj");
 
 	var matTransf = math.identity(4)
 
 	// matTransf = math.multiply(matTransf, matrotX);
 	matTransf = math.multiply(matTransf, matrotY);
 	matTransf = math.multiply(matTransf, matrotZ);
+	gl.uniformMatrix4fv(transfPtr, gl.FALSE, math.flatten(math.transpose(matTransf)).toArray());
 
 	matTransf = math.multiply(cam, matTransf);
 	matTransf = math.multiply(mproj, matTransf);
 
-	gl.uniformMatrix4fv(transfPtr, gl.FALSE, math.flatten(math.transpose(matTransf)).toArray());
+	gl.uniformMatrix4fv(transfProjPtr, gl.FALSE, math.flatten(math.transpose(matTransf)).toArray());
 
 	gl.clear(gl.COLOR_BUFFER_BIT || gl.DEPTH_BUFFER_BIT);
 	
 	var texPtr = gl.getUniformLocation(prog, "tex");
+
+	var lightDirPtr = gl.getUniformLocation(prog, "lightDirection");
+
+	gl.uniform3fv(lightDirPtr, [1.0, 1.0, 1.0]);
 
 	for (var i = 0; i < coordTriangle.length; i += numElementos) {
 		gl.uniform1i(texPtr, 6);
