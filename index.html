@@ -3,48 +3,16 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta http-equiv="Permissions-Policy" content="interest-cohort=()">
-	<meta http-equiv="Cache-Control" content="no-cache, max-age=0, must-revalidate">
-	<meta http-equiv="Pragma" content="no-cache">
-	<meta http-equiv="Expires" content="0">
+	<link rel="stylesheet" type="text/css" href="./style.css">
 
 	<title>CG1 WebGL</title>
 </head>
 
-<script src = "src/index.js"></script>
+<script src = "src/index.js?rffrdg	"></script>
+<script src = "src/stack.js?ihgfusd"></script>
 <script src = "https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.1/math.js" integrity="sha512-5nftKkjZO1gtHEWFlUGXi/vuXzFnWTom549IH/gMqOiJHcPfH5z/1DO8/c0qnoG0R8RCVLOeBDXhCjg2+23nqQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script id = "vertex-shader" type="notjs">
-	attribute vec4 position;
-	//attribute vec4 fcolor;
-	attribute vec2 texCoord;
-	uniform mat4 transf;
-	//uniform float df;
 
-	//varying vec4 color;
-	varying vec2 v_texCoord;
-
-	void main() {
-		//color = fcolor;
-		v_texCoord = texCoord;
-		gl_Position = transf * position;
-
-		//gl_Position[3] = 1.0 + gl_Position[2] / df;
-	}
-</script>
-
-<script id = "fragment-shader" type="notjs">
-	precision mediump float;
-	//vec4 color;
-	varying vec2 v_texCoord;
-
-	uniform sampler2D tex;
-
-	void main() {
-		gl_FragColor = texture2D(tex, v_texCoord);
-	}
-</script>
-
-<body onload="init()">
-	<canvas id="glcanvas" width="640" height="640"></canvas>
+<body onload="setup()">
+	<canvas id="glcanvas"></canvas>
 </body>
 </html>
