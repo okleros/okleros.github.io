@@ -67,15 +67,6 @@ function init() {
 
 }
 
-function resizeCanvas() {
-  const canvas = document.getElementById('glcanvas');
-  const width = window.innerWidth;
-  const height = window.innerHeight;
-  canvas.width = width;
-  canvas.height = height;
-  // Additional code to handle WebGL context resizing if needed
-}
-
 function loadTextures() {
 	if (loadedTexturesCount == teximg.length) {
 		initGL(gl, prog);
@@ -534,6 +525,30 @@ function rotateZ(a) { return math.matrix([
 								[          0,              0,    0,   1]
 																		]);}
 
+function rotate(x, y, z) {
+	var rot = math.multiply(rotateY(y), rotateZ(z));
+
+	return math.multiply(rotateX(x), rot);
+}
+
+function translate(x, y, z) {
+	return math.matrix([
+											[1, 0, 0, x],
+											[0, 1, 0, y],
+											[0, 0, 1, z],
+											[0, 0, 0, 1]
+																	])
+}
+
+function scale(x, y, z) {
+	return math.matrix([
+											[x, 0, 0, 0],
+											[0, y, 0, 0],
+											[0, 0, z, 0],
+											[0, 0, 0, 1]
+																	])
+}
+
 function draw() {
 	var camPos = [0, 0, 3];
 
@@ -578,5 +593,5 @@ function draw() {
 	// drawPointLight([1.0, 1.0, 1.0], [2.0, 2.0, 2.0], i4, viewMatrix, projMatrix);
 
 	angle += rotFreq;
-	requestAnimationFrame(draw);
+	// requestAnimationFrame(draw);
 }

@@ -13,10 +13,12 @@ varying vec2 v_texCoord;
 varying vec3 v_normal;
 varying vec3 v_pointToLight;
 varying vec3 v_pointToCam;
+varying float v_distance;
 
 void main() {
 	v_pointToLight = normalize(u_lightPosition - a_position.xyz);
 	v_pointToCam = normalize(u_camPosition - a_position.xyz);
+	v_distance = length(u_lightPosition - a_position.xyz);
 
 	//color = fcolor;
 	v_normal = (u_invTranspModelMatrix * vec4(a_normal, 1.0)).xyz;

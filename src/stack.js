@@ -12,8 +12,17 @@ var
 		lightPos,
 		boxGeometry,
 		mproj,
+		stack = [],
 		angle = 0.0,
-		freqRot = 1.0;
+		freqRot = 1.0,
+		n = 25;
+
+stack.push([[0.0, 0.0, 0.0], [1.0, 1.0, 1.0]]);
+stack.push([[0.0, 0.30, 0.0], [1.0, 1.0, 1.0]]);
+stack.push([[0.0, 0.60, 0.0], [1.0, 1.0, 1.0]]);
+stack.push([[0.0, 0.90, 0.0], [1.0, 1.0, 1.0]]);
+stack.push([[0.0, 1.20, 0.0], [1.0, 1.0, 1.0]]);
+stack.push([[-0.0, 1.50, -3.0], [1.0, 1.0, 1.0]]);
 
 const loadImage = path => {
   return new Promise((resolve, reject) => {
@@ -29,16 +38,48 @@ const loadImage = path => {
   })
 }
 
+window.addEventListener('keydown', function(event) {
+  // ...
+  if (event.key === ' ' && freqRot != 0) {
+  	// freqRot = 0;
+  	camPos[1] += 0.3;
+  	camLookAt[1] += 0.3;
+  	camUp[1] += 0.3;
+
+  	const topp = stack[stack.length - 1]
+
+  	stack.push([[0.0, topp[0][1] + 0.3, -3.0], topp[1]]);
+
+  	stack = stack.slice(-8);
+
+  	configCam();
+  } else if (event.key === ' ' &&freqRot == 0) { freqRot = 1; }
+});
+
+function resizeCanvas() {
+  const canvas = document.getElementById('glcanvas');
+  
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+
+  canvas.width = width;
+  canvas.height = height;
+
+	gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+	
+	mproj = createPerspective(20, gl.canvas.width / gl.canvas.height, 0.1, 1e4);
+
+	const u_viewportDimensions = gl.getUniformLocation(prog, "u_viewportDimensions");
+	gl.uniform2f(u_viewportDimensions, width, height);
+}
+
 function setup() {
 	canvas = document.getElementById("glcanvas");
 	gl = getGL(canvas);
 
-	resizeCanvas();
 
 	window.addEventListener('resize', function() {
-		resizeCanvas();
-		gl.viewport(0, 0, canvas.width, canvas.height);
-		mproj = createPerspective(20, gl.canvas.width / gl.canvas.height, 0.1, 1e4);
+		// resizeCanvas();
 	});
 
 	if (gl) {
@@ -72,18 +113,23 @@ function setup() {
 
 }
 
-function configCam() {
-	camPos = [10.0, 10.0, 10.0];
+function resetCam() {
+	camPos = [7.0, 6.0, 8.0];
 	camLookAt = [0.0, 2.0, 0.0];
 	camUp = [camPos[0], camPos[1] + 1, camPos[2]];
 
+	configCam();
+}
+
+function configCam() {
 	camera = createCamera(camPos, camLookAt, camUp);
 }
 
 async function configScene() {
-	configCam();
+	// resizeCanvas();
+	resetCam();
 
-	lightPos = camPos;
+	lightPos = [0.0, 0.0, 0.0];
 
 	ambient = {
 		color: [1.0, 1.0, 1.0]
@@ -91,13 +137,13 @@ async function configScene() {
 
 	diffuse = {
 		color: [1.0, 1.0, 1.0],
-		direction: [0.0, 0.0, -1.0]
+		direction: [0.0, -3.0, -1.0]
 	};
 
 	specular = {
-		color: [0.6549019608, 0.7803921569, 0.9058823529],
+		color: [1.0, 1.0, 1.0]/*[0.6549019608, 0.7803921569, 0.9058823529]*/,
 		position: lightPos,
-		shininess: 100
+		shininess: 50
 	};
 
 	mproj = createPerspective(20, gl.canvas.width / gl.canvas.height, 0.1, 1e4);
@@ -120,15 +166,35 @@ async function configScene() {
 	const u_shininess = gl.getUniformLocation(prog, "u_shininess");
 	gl.uniform1f(u_shininess, specular.shininess);
 	
-	boxGeometry = await load3DObject("/models/Lowpoly_tree_sample.obj");
-
-	console.log(boxGeometry);
+	boxGeometry = await load3DObject("/models/shaded_box.obj");
 
 	initTexture();
 	loop();
 }
 
-function draw3DObject(object) {
+function draw3DObject(object, info) {
+	const u_lightPosition = gl.getUniformLocation(prog, "u_lightPosition");
+	gl.uniform3fv(u_lightPosition, specular.position);
+
+	const u_invTranspModelMatrix = gl.getUniformLocation(prog, "u_invTranspModelMatrix");
+	const u_MVPMatrix = gl.getUniformLocation(prog, "u_MVPMatrix");
+	
+	const pos = info[0];
+	const scalef = info[1];
+
+	const translation = translate(pos[0], pos[1], pos[2]);
+	const scaling = scale(scalef[0], scalef[1], scalef[2]);
+
+	const modelMatrix = math.multiply(scaling, translation);
+	
+	// Aqui só enviamos invertida pois o OpenGL já interpreta como transposta
+	gl.uniformMatrix4fv(u_invTranspModelMatrix, gl.FALSE, math.flatten(math.inv(modelMatrix)).toArray());
+
+	var MVPMatrix = math.multiply(mproj, camera, modelMatrix);
+	// var MVPMatrix = math.multiply(camera, modelMatrix);
+	// MVPMatrix = math.multiply(mproj, MVPMatrix);
+
+	gl.uniformMatrix4fv(u_MVPMatrix, gl.FALSE, math.flatten(math.transpose(MVPMatrix)).toArray());
   // Bind normals buffer
   var normalBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
@@ -198,51 +264,24 @@ async function initTexture() {
 function loop() {
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-	camera = createCamera(camPos, camLookAt, camUp);
+	var top = stack[stack.length - 1];
+	top[0][2] += freqRot/10;
+	console.log(n);
 
-	var coordTriangle = new Float32Array([
-											 0.0,  1.0,  1.0,
-											-0.5, -1.0,  1.0,
-											 0.5, -1.0,  1.0
-																])
+	specular.position = [top[0][0], top[0][1] + 3, top[0][2]];
 
-	var indices = new Uint16Array([
-									 0, 1, 2
-												])
+	for (var i = 0; i < stack.length; i++) {
+		draw3DObject(boxGeometry, stack[i]);
 
-/*	const vertexBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, coordTriangle, gl.STATIC_DRAW);
+	}
 
-	// Bind index buffer
-	const indexBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
+	if (math.abs(top[0][2]) >= 3) {
+		freqRot *= -1;
+	}
 
-	const a_position = gl.getAttribLocation(prog, "a_position");
-	gl.enableVertexAttribArray(a_position);
-	gl.vertexAttribPointer(a_position, 3, gl.FLOAT, gl.FALSE, 0, 0);
+	// n -= 0.01;
 
-	gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
-*/
-	var matrotY = rotateY(rad(angle));
-
-	var u_invTranspModelMatrix = gl.getUniformLocation(prog, "u_invTranspModelMatrix");
-	var u_MVPMatrix = gl.getUniformLocation(prog, "u_MVPMatrix");
-	
-	var modelMatrix = math.identity(4);
-	modelMatrix = math.multiply(modelMatrix, matrotY);
-	
-	gl.uniformMatrix4fv(u_invTranspModelMatrix, gl.FALSE, math.flatten((math.inv(modelMatrix))).toArray());
-
-	var MVPMatrix = math.multiply(camera, modelMatrix);
-	MVPMatrix = math.multiply(mproj, MVPMatrix);
-
-	gl.uniformMatrix4fv(u_MVPMatrix, gl.FALSE, math.flatten(math.transpose(MVPMatrix)).toArray());
-
-	draw3DObject(boxGeometry);
-
-	angle += freqRot;
+	configCam();
 
 	requestAnimationFrame(loop);
 }
