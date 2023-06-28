@@ -1,11 +1,11 @@
 precision mediump float;
 
-uniform vec2 u_viewportDimensions;
 uniform vec3 u_lightDirection;
 uniform vec3 u_ambientColor;
 uniform vec3 u_diffuseColor;
 uniform vec3 u_specularColor;
 uniform float u_shininess;
+uniform float u_stackPos;
 uniform sampler2D u_tex;
 
 varying vec2 v_texCoord;
@@ -49,8 +49,6 @@ vec4 blur(sampler2D tex, vec2 texCoord)
 
 void main()
 {
-    float attenuation = 1.0 / v_distance * v_distance;
-
     vec2 normalizedFragCoord = gl_FragCoord.xy / vec2(640, 480);
 
     vec3 v_normal_n = normalize(v_normal);
@@ -64,7 +62,7 @@ void main()
     vec3 diffuse = lightd * u_diffuseColor;
 
     float lightp = max(dot(v_normal_n, v_pointToLight_n), 0.0);
-    vec3 point = /* attenuation *  */lightp * u_specularColor;
+    vec3 point = lightp * u_specularColor;
 
     float lighte = max(dot(v_normal_n, halfVec), 0.0);
     vec3 specular = u_specularColor * pow(lighte, u_shininess);
@@ -72,7 +70,7 @@ void main()
     // vec4 texColor = texture2D(u_tex, v_texCoord);
     // vec4 texColor = vec4(v_normal_n, 1.0);
 
-    vec4 texColor = rgb2hsv(vec4(0.0, 0.0, 0.3 + normalizedFragCoord.y, 1.0));
+    vec4 texColor = vec4(min(u_stackPos * 0.4, 1.0), min(u_stackPos, 1.0), min(0.3 + u_stackPos / 2.0, 1.0), 1.0);
     // gl_FragColor[3] = 1.0;
-    gl_FragColor = vec4((0.2 * ambient + 0.6 * diffuse + 0.3 * point + 0.2 * specular) * texColor.rgb, texColor.a);
+    gl_FragColor = vec4((max((1.0 - (u_stackPos * 0.7)), 0.4) * ambient + 0.2 * diffuse + 0.8 * point + 0.2 * specular) * texColor.rgb, texColor.a);
 }

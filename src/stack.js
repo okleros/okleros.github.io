@@ -12,17 +12,16 @@ var
 		lightPos,
 		boxGeometry,
 		mproj,
+		stackPos = 1,
+		affectedByPhysics,
+		currentDir = "z";
 		stack = [],
 		angle = 0.0,
 		freqRot = 1.0,
 		n = 25;
 
-stack.push([[0.0, 0.0, 0.0], [1.0, 1.0, 1.0]]);
-stack.push([[0.0, 0.30, 0.0], [1.0, 1.0, 1.0]]);
-stack.push([[0.0, 0.60, 0.0], [1.0, 1.0, 1.0]]);
-stack.push([[0.0, 0.90, 0.0], [1.0, 1.0, 1.0]]);
-stack.push([[0.0, 1.20, 0.0], [1.0, 1.0, 1.0]]);
-stack.push([[-0.0, 1.50, -3.0], [1.0, 1.0, 1.0]]);
+stack.push([[ 0.0, 1.20,  0.0], [1.0, 1.0, 1.0], stackPos]);
+stack.push([[ 0.0, 1.50, -3.0], [1.0, 1.0, 1.0], stackPos]);
 
 const loadImage = path => {
   return new Promise((resolve, reject) => {
@@ -41,19 +40,32 @@ const loadImage = path => {
 window.addEventListener('keydown', function(event) {
   // ...
   if (event.key === ' ' && freqRot != 0) {
+  	// affectedByPhysics = true;
+
   	// freqRot = 0;
-  	camPos[1] += 0.3;
-  	camLookAt[1] += 0.3;
-  	camUp[1] += 0.3;
+  	camPos[1] += 0.29;
+  	camLookAt[1] += 0.29;
+  	camUp[1] += 0.29;
 
   	const topp = stack[stack.length - 1]
 
-  	stack.push([[0.0, topp[0][1] + 0.3, -3.0], topp[1]]);
+  	stackPos++;
+
+  	if (currentDir === "z") {
+  		stack.push([[-3.0, topp[0][1] + 0.3,  0.0], [topp[1][0], topp[1][1], topp[1][2] * 0.9], stackPos]);
+  		currentDir = "x";
+
+  	} else if (currentDir === "x") {
+  		stack.push([[ 0.0, topp[0][1] + 0.3, -3.0], [topp[1][0] * 0.9, topp[1][1], topp[1][2]], stackPos]);
+  		currentDir = "z";
+
+  	}
+
 
   	stack = stack.slice(-8);
 
   	configCam();
-  } else if (event.key === ' ' &&freqRot == 0) { freqRot = 1; }
+  } else if (event.key === ' ' &&freqRot == 0) { freqRot = 1; affectedByPhysics = false;}
 });
 
 function resizeCanvas() {
@@ -74,13 +86,10 @@ function resizeCanvas() {
 }
 
 function setup() {
+	affectedByPhysics = false;
+
 	canvas = document.getElementById("glcanvas");
 	gl = getGL(canvas);
-
-
-	window.addEventListener('resize', function() {
-		// resizeCanvas();
-	});
 
 	if (gl) {
 		const vtxshSource = loadSource("src/vtxsh.glsl");
@@ -95,7 +104,7 @@ function setup() {
 
 		gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 		
-		gl.clearColor(0.8705883, 0.3647059, 0.5137255, 1);
+		gl.clearColor(0.8705883, 0.3647059, 0.5137255, 1.0);
 		
 		gl.enable(gl.BLEND);
 		gl.enable(gl.CULL_FACE);
@@ -137,11 +146,11 @@ async function configScene() {
 
 	diffuse = {
 		color: [1.0, 1.0, 1.0],
-		direction: [0.0, -3.0, -1.0]
+		direction: [-1.0, 0.0, -1.0]
 	};
 
 	specular = {
-		color: [1.0, 1.0, 1.0]/*[0.6549019608, 0.7803921569, 0.9058823529]*/,
+		color: [1.0, 1.0, 1.0] /*[0.6549019608, 0.7803921569, 0.9058823529]*/ /*[0.0, 1.0, 1.0]*/,
 		position: lightPos,
 		shininess: 50
 	};
@@ -173,6 +182,9 @@ async function configScene() {
 }
 
 function draw3DObject(object, info) {
+	const u_stackPos = gl.getUniformLocation(prog, "u_stackPos");
+  gl.uniform1f(u_stackPos, info[2] / 50.0);
+
 	const u_lightPosition = gl.getUniformLocation(prog, "u_lightPosition");
 	gl.uniform3fv(u_lightPosition, specular.position);
 
@@ -185,7 +197,7 @@ function draw3DObject(object, info) {
 	const translation = translate(pos[0], pos[1], pos[2]);
 	const scaling = scale(scalef[0], scalef[1], scalef[2]);
 
-	const modelMatrix = math.multiply(scaling, translation);
+	const modelMatrix = math.multiply(translation, scaling);
 	
 	// Aqui só enviamos invertida pois o OpenGL já interpreta como transposta
 	gl.uniformMatrix4fv(u_invTranspModelMatrix, gl.FALSE, math.flatten(math.inv(modelMatrix)).toArray());
@@ -265,21 +277,28 @@ function loop() {
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 	var top = stack[stack.length - 1];
-	top[0][2] += freqRot/10;
-	console.log(n);
 
-	specular.position = [top[0][0], top[0][1] + 3, top[0][2]];
+	if (currentDir === "z") {
+		top[0][2] += freqRot / 10;
+
+		if (math.abs(top[0][2]) >= 3.1) {
+			freqRot *= -1;
+		}
+	
+	} else if (currentDir === "x") {
+		top[0][0] += freqRot / 10;
+
+		if (math.abs(top[0][0]) >= 3.1) {
+			freqRot *= -1;
+		}
+	}
+	
+	specular.position = [top[0][0], top[0][1] + 1.0, top[0][2]];
 
 	for (var i = 0; i < stack.length; i++) {
 		draw3DObject(boxGeometry, stack[i]);
 
 	}
-
-	if (math.abs(top[0][2]) >= 3) {
-		freqRot *= -1;
-	}
-
-	// n -= 0.01;
 
 	configCam();
 
