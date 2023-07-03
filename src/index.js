@@ -194,14 +194,16 @@ async function load3DObject(url) {
 				var vertexIndex = parseInt(faceElement[0] - 1);
 				var textureIndex = parseInt(faceElement[1] - 1);
 				var normalIndex = parseInt(faceElement[2] - 1);
-				
+				if (vertexIndex < 0) {
+					vertexIndex = vertices.length / 3 + vertexIndex + 1;
+				}
 				if (textureIndex < 0) {
 					textureIndex = texCoords.length / 2 + textureIndex + 1;
 				}
 				if (normalIndex < 0) {
 					normalIndex = normals.length / 3 + normalIndex + 1;
 				}
-				
+				vertexIndices.push(vertexIndex);
 				textureIndices.push(textureIndex);
 				normalIndices.push(normalIndex);
 				
@@ -240,15 +242,16 @@ async function load3DObject(url) {
 	  }
 	}
 	
-	var box = {};
-
-
-	box.vertices = new Float32Array(vertices);
-	box.normals = new Float32Array(Fnormals);
-	box.texCoords = new Float32Array(FtexCoords);
+	var box = {
+		vertices: new Float32Array(vertices),
+		indices: new Uint16Array(FvertexIndex),
+		normals: new Float32Array(Fnormals),
+		texCoords: new Float32Array(FtexCoords)
+	};
   
 	return box;
 }
+
 
 function rotateX(a) { return math.matrix([  
 								[1,               0,             0,   0],
