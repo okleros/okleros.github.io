@@ -56,7 +56,7 @@ window.addEventListener('keydown', function(event) {
   		currentDir = "x";
 
   	} else if (currentDir === "x") {
-  		stack.push([[ 0.0, topp[0][1] + 0.3, -3.0], [topp[1][0], topp[1][1], topp[1][2]], stackPos]);
+  		stack.push([[ 0.0, topp[0][1] + 0.3, -3.0], [topp[1][0] * 0.9, topp[1][1], topp[1][2]], stackPos]);
   		currentDir = "z";
 
   	}
@@ -197,7 +197,7 @@ function draw3DObject(object, info) {
 	const translation = translate(pos[0], pos[1], pos[2]);
 	const scaling = scale(scalef[0], scalef[1], scalef[2]);
 
-	const modelMatrix = math.multiply(translation, scaling);
+	const modelMatrix = math.multiply(scaling, translation);
 	
 	// Aqui só enviamos invertida pois o OpenGL já interpreta como transposta
 	gl.uniformMatrix4fv(u_invTranspModelMatrix, gl.FALSE, math.flatten(math.inv(modelMatrix)).toArray());
