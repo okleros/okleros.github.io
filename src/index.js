@@ -305,7 +305,7 @@ async function load3DObject(url) {
 	}
   
 	var box = {
-	  vertices: new Float32Array(vertices),
+	  indices: new Float32Array(vertices),
 	  normals: new Float32Array(normals),
 	  texCoords: new Float32Array(texCoords)
 	};
