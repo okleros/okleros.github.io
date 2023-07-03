@@ -200,11 +200,9 @@ function draw3DObject(object, info) {
 	const modelMatrix = math.multiply(translation, scaling);
 	
 	// Aqui só enviamos invertida pois o OpenGL já interpreta como transposta
-	gl.uniformMatrix4fv(u_invTranspModelMatrix, gl.FALSE, math.flatten(math.inv(math.transpose(modelMatrix))).toArray());
+	gl.uniformMatrix4fv(u_invTranspModelMatrix, gl.FALSE, math.flatten(math.inv(modelMatrix)).toArray());
 
 	var MVPMatrix = math.multiply(mproj, camera, modelMatrix);
-	// var MVPMatrix = math.multiply(camera, modelMatrix);
-	// MVPMatrix = math.multiply(mproj, MVPMatrix);
 
 	gl.uniformMatrix4fv(u_MVPMatrix, gl.FALSE, math.flatten(math.transpose(MVPMatrix)).toArray());
 	// Bind normals buffer
