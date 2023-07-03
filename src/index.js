@@ -236,6 +236,7 @@ async function load3DObject(url) {
 				  normals[normalIndex * 3 + 1],    
 				  normals[normalIndex * 3 + 2]     
 				];
+				
 				Fnormals.push(...normal);
 			}
 
@@ -258,14 +259,14 @@ function rotateX(a) { return math.matrix([
 								[0,     math.cos(a),  -math.sin(a),   0],
 								[0,     math.sin(a),   math.cos(a),   0],
 								[0,               0,             0,   1]
-																			]);}
+																		]);}
 	
 function rotateY(a) { return math.matrix([  
 								[math.cos(a),    0,   -math.sin(a),   0],
 								[          0,    1,              0,   0],
 								[math.sin(a),    0,    math.cos(a),   0],
 								[          0,    0,              0,   1]
-																					]);}
+																		]);}
 
 function rotateZ(a) { return math.matrix([ 
 								[math.cos(a),   -math.sin(a),    0,   0],
@@ -275,72 +276,25 @@ function rotateZ(a) { return math.matrix([
 																		]);}
 
 function rotate(x, y, z) {
-	var rot = math.multiply(rotateY(y), rotateZ(z));
+	const rot = math.multiply(rotateY(y), rotateZ(z));
 
 	return math.multiply(rotateX(x), rot);
 }
 
 function translate(x, y, z) {
 	return math.matrix([
-											[1, 0, 0, x],
-											[0, 1, 0, y],
-											[0, 0, 1, z],
-											[0, 0, 0, 1]
-																	])
+						[1, 0, 0, x],
+						[0, 1, 0, y],
+						[0, 0, 1, z],
+						[0, 0, 0, 1]
+									])
 }
 
 function scale(x, y, z) {
 	return math.matrix([
-											[x, 0, 0, 0],
-											[0, y, 0, 0],
-											[0, 0, z, 0],
-											[0, 0, 0, 1]
-																	])
-}
-
-function draw() {
-	var camPos = [0, 0, 3];
-
-	var camPosPtr = gl.getUniformLocation(prog, "u_camPosition");
-
-	gl.uniform3fv(camPosPtr, camPos);
-
-	var camLookAt = [0, 0, 0];
-	var camUp = [camPos[0], camPos[1] + 1, camPos[2]];
-
-	var cam = createCamera(camPos, camLookAt, camUp);
-	
-	var a = rad(angle);
-
-	var mproj = createPerspective(45, canvas.width / canvas.height, 1e-4, 1e4);
-
-	var u_modelMatrix = gl.getUniformLocation(prog, "u_modelMatrix");
-	var u_MVPMatrix = gl.getUniformLocation(prog, "u_MVPMatrix");
-
-	var modelMatrix = math.identity(4);
-	var viewMatrix = cam;
-	var projMatrix = mproj;
-
-	// modelMatrix = math.multiply(modelMatrix, matrotX);
-	modelMatrix = math.multiply(modelMatrix, matrotY);
-	modelMatrix = math.multiply(modelMatrix, matrotZ);
-	gl.uniformMatrix4fv(u_modelMatrix, gl.FALSE, math.flatten(math.transpose(modelMatrix)).toArray());
-
-	var MVPMatrix = math.multiply(viewMatrix, modelMatrix);
-	MVPMatrix = math.multiply(mproj, MVPMatrix);
-
-	gl.uniformMatrix4fv(u_MVPMatrix, gl.FALSE, math.flatten(math.transpose(MVPMatrix)).toArray());
-
-	gl.clear(gl.COLOR_BUFFER_BIT || gl.DEPTH_BUFFER_BIT);
-	
-	for (var i = 0; i < coordTriangle.length; i += numElementos) {
-		// gl.uniform1i(texPtr, math.floor(i / numElementos));
-		gl.drawArrays(gl.TRIANGLES, i, 3);
-		gl.drawArrays(gl.TRIANGLES, i + 2, 3);
-	}
-	// lightPosition, lightColor, modelMatrix, viewMatrix, projectionMatrix
-	// drawPointLight([1.0, 1.0, 1.0], [2.0, 2.0, 2.0], i4, viewMatrix, projMatrix);
-
-	angle += rotFreq;
-	// requestAnimationFrame(draw);
+						[x, 0, 0, 0],
+						[0, y, 0, 0],
+						[0, 0, z, 0],
+						[0, 0, 0, 1]
+									])
 }

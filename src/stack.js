@@ -56,7 +56,7 @@ window.addEventListener('keydown', function(event) {
   		currentDir = "x";
 
   	} else if (currentDir === "x") {
-  		stack.push([[ 0.0, topp[0][1] + 0.3, -3.0], [topp[1][0] * 0.9, topp[1][1], topp[1][2]], stackPos]);
+  		stack.push([[ 0.0, topp[0][1] + 0.3, -3.0], [topp[1][0], topp[1][1], topp[1][2]], stackPos]);
   		currentDir = "z";
 
   	}
@@ -183,7 +183,7 @@ async function configScene() {
 
 function draw3DObject(object, info) {
 	const u_stackPos = gl.getUniformLocation(prog, "u_stackPos");
-  gl.uniform1f(u_stackPos, info[2] / 50.0);
+	gl.uniform1f(u_stackPos, info[2] / 50.0);
 
 	const u_lightPosition = gl.getUniformLocation(prog, "u_lightPosition");
 	gl.uniform3fv(u_lightPosition, specular.position);
@@ -207,44 +207,44 @@ function draw3DObject(object, info) {
 	// MVPMatrix = math.multiply(mproj, MVPMatrix);
 
 	gl.uniformMatrix4fv(u_MVPMatrix, gl.FALSE, math.flatten(math.transpose(MVPMatrix)).toArray());
-  // Bind normals buffer
-  var normalBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(object.normals), gl.STATIC_DRAW);
+	// Bind normals buffer
+	var normalBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, object.normals, gl.STATIC_DRAW);
 
-  // Bind texture coordinates buffer
-  var texCoordBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(object.texCoords), gl.STATIC_DRAW);
+	// Bind texture coordinates buffer
+	var texCoordBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, object.texCoords, gl.STATIC_DRAW);
 
-  // Bind vertex buffer
-  var vertexBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(object.vertices), gl.STATIC_DRAW);
+	// Bind vertex buffer
+	var vertexBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, object.vertices, gl.STATIC_DRAW);
 
-  // Bind index buffer
-  var indexBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(object.indices), gl.STATIC_DRAW);
+	// Bind index buffer
+	var indexBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, object.indices, gl.STATIC_DRAW);
 
-  var a_position = gl.getAttribLocation(prog, "a_position");
-  gl.enableVertexAttribArray(a_position);
-  gl.vertexAttribPointer(a_position, 3, gl.FLOAT, false, 0, 0);
+	var a_position = gl.getAttribLocation(prog, "a_position");
+	gl.enableVertexAttribArray(a_position);
+	gl.vertexAttribPointer(a_position, 3, gl.FLOAT, false, 0, 0);
 
-  var a_texCoord = gl.getAttribLocation(prog, "a_texCoord");
-  gl.enableVertexAttribArray(a_texCoord);
-  gl.vertexAttribPointer(a_texCoord, 2, gl.FLOAT, false, 0, 0);
+	var a_texCoord = gl.getAttribLocation(prog, "a_texCoord");
+	gl.enableVertexAttribArray(a_texCoord);
+	gl.vertexAttribPointer(a_texCoord, 2, gl.FLOAT, false, 0, 0);
 
-  var a_normal = gl.getAttribLocation(prog, "a_normal");
-  gl.enableVertexAttribArray(a_normal);
-  gl.vertexAttribPointer(a_normal, 3, gl.FLOAT, false, 0, 0);
+	var a_normal = gl.getAttribLocation(prog, "a_normal");
+	gl.enableVertexAttribArray(a_normal);
+	gl.vertexAttribPointer(a_normal, 3, gl.FLOAT, false, 0, 0);
 
-  gl.drawElements(gl.TRIANGLES, object.indices.length, gl.UNSIGNED_SHORT, 0);
+	gl.drawElements(gl.TRIANGLES, object.indices.length, gl.UNSIGNED_SHORT, 0);
 
-  gl.deleteBuffer(normalBuffer);
-  gl.deleteBuffer(indexBuffer);
-  gl.deleteBuffer(vertexBuffer);
-  gl.deleteBuffer(texCoordBuffer);
+	gl.deleteBuffer(normalBuffer);
+	gl.deleteBuffer(indexBuffer);
+	gl.deleteBuffer(vertexBuffer);
+	gl.deleteBuffer(texCoordBuffer);
 }
 
 
