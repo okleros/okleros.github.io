@@ -134,7 +134,7 @@ function createPerspective(fovy, aspec, near, far) {
 	return proj;
 }
 
-async function oldload3DObject(url) {
+async function load3DObject(url) {
 	var response = await fetch(url);
 	var objData = await response.text();
 	var lines = objData.split('\n');
@@ -249,70 +249,6 @@ async function oldload3DObject(url) {
   
 	return box;
 }
-
-async function load3DObject(url) {
-	var response = await fetch(url);
-	var objData = await response.text();
-	var lines = objData.split('\n');
-  
-	var vertices = [];
-	var normals = [];
-	var texCoords = [];
-  
-	for (var i = 0; i < lines.length; i++) {
-	  var line = lines[i].trim();
-	  var elements = line.split(' ');
-  
-	  if (elements[0] === 'v') { // Vertices
-		var x = parseFloat(elements[1]);
-		var y = parseFloat(elements[2]);
-		var z = parseFloat(elements[3]);
-  
-		vertices.push(x, y, z);
-	  }
-	  else if (elements[0] === 'vn') { // Normal
-		var nx = parseFloat(elements[1]);
-		var ny = parseFloat(elements[2]);
-		var nz = parseFloat(elements[3]);
-  
-		normals.push(nx, ny, nz);
-	  }
-	  else if (elements[0] === 'vt') { // Texture
-		var t1 = parseFloat(elements[1]);
-		var t2 = parseFloat(elements[2]);
-  
-		texCoords.push(t1, t2);
-	  }
-	  else if (elements[0] === 'f') { // Faces
-		var FtextureIndex = [];
-		var FnormalIndex = [];
-  
-		for (var j = 1; j < elements.length; j++) {
-		  var faceElement = elements[j].split('/');
-		  var vertexIndex = parseInt(faceElement[0]) - 1;
-		  var textureIndex = parseInt(faceElement[1]) - 1;
-		  var normalIndex = parseInt(faceElement[2]) - 1;
-  
-		  if (textureIndex >= 0) {
-			FtextureIndex.push(textureIndex);
-		  }
-  
-		  if (normalIndex >= 0) {
-			FnormalIndex.push(normalIndex);
-		  }
-		}
-	  }
-	}
-  
-	var box = {
-	  indices: new Float32Array(vertices),
-	  normals: new Float32Array(normals),
-	  texCoords: new Float32Array(texCoords)
-	};
-  
-	return box;
-  }
-  
 
 function rotateX(a) { return math.matrix([  
 								[1,               0,             0,   0],
