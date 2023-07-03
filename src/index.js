@@ -1,5 +1,3 @@
-
-
 function loadSource(url) {
 	const xhr = new XMLHttpRequest();
 	xhr.open('GET', url + "?please-do-not-cache" + math.random(), false);
@@ -21,10 +19,16 @@ function getGL(canvas) {
 	var gl;
 	
 	gl = canvas.getContext("webgl");
-	if (gl) { return gl; }
+	
+	if (gl) {
+		return gl;
+	}
 
 	gl = canvas.getContext("experimental-webgl");
-	if (gl) { return gl; }
+	
+	if (gl) {
+		return gl;
+	}
 
 	alert("pipipipopopo");
 }
@@ -34,7 +38,9 @@ function createShader(gl, shaderType, shaderSrc) {
 	gl.shaderSource(shader, shaderSrc);
 	gl.compileShader(shader);
 
-	if (gl.getShaderParameter(shader, gl.COMPILE_STATUS)) { return shader }
+	if (gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+		return shader;
+	}
 
 	alert(gl.getShaderInfoLog(shader));
 
@@ -54,108 +60,13 @@ function createProgram(gl, vtxsh, fragsh) {
 	gl.deleteProgram(prog);
 }
 
-function init() {
-	for (var i = 0; i < texSrc.length; i++) {
-		teximg[i] = new Image();
-		teximg[i].crossOrigin = "anonymous";
-		teximg[i].src = "res/" + texSrc[i];
-		teximg[i].onload = function() {
-			loadedTexturesCount++;
-			loadTextures();
-		}
-	}
-
-}
-
-function loadTextures() {
-	if (loadedTexturesCount == teximg.length) {
-		initGL(gl, prog);
-		configScene();
-		draw();
-	}
-}
-
-function drawPointLight(lightPosition, lightColor, modelMatrix, viewMatrix, projectionMatrix) {
-  // Define the geometry of the point light
-  const lightGeometry = [
-    -0.1, -0.1, 0.0,
-    0.1, -0.1, 0.0,
-    -0.1, 0.1, 0.0,
-    0.1, 0.1, 0.0,
-  ];
-
-  // Create and bind the vertex buffer
-  const vertexBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(lightGeometry), gl.STATIC_DRAW);
-
-  // Enable and set the position attribute
-  const positionAttributeLocation = gl.getAttribLocation(prog, "a_position");
-  gl.enableVertexAttribArray(positionAttributeLocation);
-  gl.vertexAttribPointer(positionAttributeLocation, 3, gl.FLOAT, false, 0, 0);
-
-  // Set up the uniforms
-  const modelMatrixLocation = gl.getUniformLocation(prog, "u_modelMatrix");
-  const viewMatrixLocation = gl.getUniformLocation(prog, "u_viewMatrix");
-  const projectionMatrixLocation = gl.getUniformLocation(prog, "u_projMatrix");
-  const lightColorLocation = gl.getUniformLocation(prog, "u_lightColor");
-
-  gl.uniformMatrix4fv(modelMatrixLocation, false, modelMatrix);
-  gl.uniformMatrix4fv(viewMatrixLocation, false, viewMatrix);
-  gl.uniformMatrix4fv(projectionMatrixLocation, false, projectionMatrix);
-  gl.uniform3fv(lightColorLocation, lightColor);
-
-  // Draw the point light
-  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-
-  // Cleanup: Delete the vertex buffer
-  gl.deleteBuffer(vertexBuffer);
-}
-
-function desenha(object) {
-	// Bind vertex buffer
-	const vertexBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, object.vertices, gl.STATIC_DRAW);
-
-	// Bind index buffer
-	const indexBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, object.indices, gl.STATIC_DRAW);
-	
-	// Bind normals buffer
-	const normalBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, object.normals, gl.STATIC_DRAW);
-	
-	// Bind texture coordinates buffer
-	const texCoordBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, object.textures, gl.STATIC_DRAW);
-
-	const a_position = gl.getAttribLocation(prog, "a_position");
-	gl.enableVertexAttribArray(a_position);
-	gl.vertexAttribPointer(a_position, 3, gl.FLOAT, gl.FALSE, 0, 0);
-
-	const a_normal = gl.getAttribLocation(prog, "a_normal");
-	gl.enableVertexAttribArray(a_normal);
-	gl.vertexAttribPointer(a_normal, 3, gl.FLOAT, gl.FALSE, 0, 0);
-
-	const a_texCoord = gl.getAttribLocation(prog, "a_texCoord");
-	gl.enableVertexAttribArray(a_texCoord);
-	gl.vertexAttribPointer(a_texCoord, 2, gl.FLOAT, gl.FALSE, 0, 0);
-
-	gl.drawElements(gl.TRIANGLES, object.indices.length, gl.UNSIGNED_SHORT, 0);
-
-}
-
 function initGL(gl, prog) {
 	canvas = document.getElementById("glcanvas");
 	gl = getGL(canvas);
 
 	if (gl) {
-		var vtxshSource = loadSource("src/vtxsh.glsl"); /*document.getElementById("vertex-shader").text;*/
-		var fragshSource = loadSource("src/fragsh.glsl"); /*document.getElementById("fragment-shader").text;*/
+		var vtxshSource = loadSource("src/vtxsh.glsl");
+		var fragshSource = loadSource("src/fragsh.glsl");
 
 		var vtxsh = createShader(gl, gl.VERTEX_SHADER, vtxshSource);
 		var fragsh = createShader(gl, gl.FRAGMENT_SHADER, fragshSource);
@@ -173,160 +84,6 @@ function initGL(gl, prog) {
 		gl.enable(gl.DEPTH_TEST);
 		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 	}
-}
-
-function oldconfigScene() {
-		i4 = math.identity(4)
-		
-		coordTriangle = new Float32Array([
-											// FRENTE
-											-0.5,  0.5,  0.5,  0.0,  0.0,
-											-0.5, -0.5,  0.5,  0.0,  1.0,
-											 0.5, -0.5,  0.5,  1.0,  1.0,
-											 0.5,  0.5,  0.5,  1.0,  0.0,
-											-0.5,  0.5,  0.5,  0.0,  0.0,
-											 
-											// COSTAS
-											 0.5,  0.5, -0.5,  0.0,  0.0,
-											 0.5, -0.5, -0.5,  0.0,  1.0,
-											-0.5, -0.5, -0.5,  1.0,  1.0,
-											-0.5,  0.5, -0.5,  1.0,  0.0,
-											 0.5,  0.5, -0.5,  0.0,  0.0,
-
-											// DIREITA
-											 0.5,  0.5,  0.5,  0.0,  0.0,
-											 0.5, -0.5,  0.5,  0.0,  1.0,
-											 0.5, -0.5, -0.5,  1.0,  1.0,
-											 0.5,  0.5, -0.5,  1.0,  0.0,
-											 0.5,  0.5,  0.5,  0.0,  0.0,
-
-											// ESQUERDA
-											-0.5,  0.5, -0.5,  0.0,  0.0,
-											-0.5, -0.5, -0.5,  0.0,  1.0,
-											-0.5, -0.5,  0.5,  1.0,  1.0,
-											-0.5,  0.5,  0.5,  1.0,  0.0,
-											-0.5,  0.5, -0.5,  0.0,  0.0,
-
-											// CIMA
-											-0.5,  0.5, -0.5,  0.0,  0.0,
-											-0.5,  0.5,  0.5,  0.0,  1.0,
-											 0.5,  0.5,  0.5,  1.0,  1.0,
-											 0.5,  0.5, -0.5,  1.0,  0.0,
-											-0.5,  0.5, -0.5,  0.0,  0.0,
-
-											// BAIXO
-											-0.5, -0.5,  0.5,  0.0,  0.0,
-											-0.5, -0.5, -0.5,  0.0,  1.0,
-											 0.5, -0.5, -0.5,  1.0,  1.0,
-											 0.5, -0.5,  0.5,  1.0,  0.0,
-											-0.5, -0.5,  0.5,  0.0,  0.0,
-																			]);
-
-		normals = new Float32Array([
-																0.0,   0.0,   1.0,
-																0.0,   0.0,   1.0,
-																0.0,   0.0,   1.0,
-																0.0,   0.0,   1.0,
-																0.0,   0.0,   1.0,
-
-																0.0,   0.0,  -1.0,
-																0.0,   0.0,  -1.0,
-																0.0,   0.0,  -1.0,
-																0.0,   0.0,  -1.0,
-																0.0,   0.0,  -1.0,
-																
-																1.0,   0.0,   0.0,
-																1.0,   0.0,   0.0,
-																1.0,   0.0,   0.0,
-																1.0,   0.0,   0.0,
-																1.0,   0.0,   0.0,
-																
-															 -1.0,   0.0,   0.0,
-															 -1.0,   0.0,   0.0,
-															 -1.0,   0.0,   0.0,
-															 -1.0,   0.0,   0.0,
-															 -1.0,   0.0,   0.0,
-																
-																0.0,   1.0,   0.0,
-																0.0,   1.0,   0.0,
-																0.0,   1.0,   0.0,
-																0.0,   1.0,   0.0,
-																0.0,   1.0,   0.0,
-																
-																0.0,  -1.0,   0.0,
-																0.0,  -1.0,   0.0,
-																0.0,  -1.0,   0.0,
-																0.0,  -1.0,   0.0,
-																0.0,  -1.0,   0.0,
-																									]);
-
-		numElementos = 5;
-
-		var bufferPtr = gl.createBuffer();
-		gl.bindBuffer(gl.ARRAY_BUFFER, bufferPtr);
-		gl.bufferData(gl.ARRAY_BUFFER, coordTriangle, gl.STATIC_DRAW);
-
-		var positionPtr = gl.getAttribLocation(prog, "a_position");
-		gl.enableVertexAttribArray(positionPtr);
-		gl.vertexAttribPointer( 
-								positionPtr     , // attribute location
-								3               , // number of elements per attribute
-								gl.FLOAT        , // type of elements
-								gl.FALSE        , // whether or not values are normalized
-								numElementos * 4, // size of an individual block of data
-								0 * 4             // offset from the beginning of the data to this specific attribute
-												);
-		
-		var texCoordPtr = gl.getAttribLocation(prog, "a_texCoord");
-		gl.enableVertexAttribArray(texCoordPtr);
-		gl.vertexAttribPointer(
-								texCoordPtr     , // attribute location
-								2               , // number of elements per attribute
-								gl.FLOAT        , // type of elements
-								gl.FALSE        , // whether or not values are normalized
-								numElementos * 4, // size of an individual block of data
-								3 * 4             // offset from the beginning of the data to this specific attribute
-												);
-
-		var bufnormalPtr = gl.createBuffer();
-		gl.bindBuffer(gl.ARRAY_BUFFER, bufnormalPtr);
-		gl.bufferData(gl.ARRAY_BUFFER, normals, gl.STATIC_DRAW);
-
-		var normalPtr = gl.getAttribLocation(prog, "a_normal");
-
-		gl.enableVertexAttribArray(normalPtr);
-		gl.vertexAttribPointer( 
-								normalPtr       , // attribute location
-								3               , // number of elements per attribute
-								gl.FLOAT        , // type of elements
-								gl.FALSE        , // whether or not values are normalized
-								3 * 4, // size of an individual block of data
-								0 * 4             // offset from the beginning of the data to this specific attribute
-												);
-		var lightColorPtr = gl.getUniformLocation(prog, "u_lightColor");
-		gl.uniform3fv(lightColorPtr, [1.0, 1.0, 1.0]);
-
-		var lightPosPtr = gl.getUniformLocation(prog, "u_lightPosition");
-		gl.uniform3fv(lightPosPtr, [2.0, 2.0, 2.0]);
-
-		var u_lightDirection = gl.getUniformLocation(prog, "u_lightDirection");
-		gl.uniform3fv(u_lightDirection, [-1.0, 0.0, -1.0]);
-
-		texPtr = gl.getUniformLocation(prog, "u_tex");
-		gl.uniform1i(texPtr, 6);
-
-		for (var i = 0; i < texSrc.length; i++) {
-			// submit image to gpu
-			var tex = gl.createTexture();
-			gl.activeTexture(gl.TEXTURE0 + i);
-			gl.bindTexture(gl.TEXTURE_2D, tex);
-			// setting texture parameters
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, teximg[i]);
-		}
 }
 
 function createCamera(pos, target, up) {
@@ -377,7 +134,7 @@ function createPerspective(fovy, aspec, near, far) {
 	return proj;
 }
 
-async function load3DObject(url) {
+async function oldload3DObject(url) {
 	var response = await fetch(url);
 	var objData = await response.text();
 	var lines = objData.split('\n');
@@ -437,16 +194,14 @@ async function load3DObject(url) {
 				var vertexIndex = parseInt(faceElement[0] - 1);
 				var textureIndex = parseInt(faceElement[1] - 1);
 				var normalIndex = parseInt(faceElement[2] - 1);
-				if (vertexIndex < 0) {
-					vertexIndex = vertices.length / 3 + vertexIndex + 1;
-				}
+				
 				if (textureIndex < 0) {
 					textureIndex = texCoords.length / 2 + textureIndex + 1;
 				}
 				if (normalIndex < 0) {
 					normalIndex = normals.length / 3 + normalIndex + 1;
 				}
-				vertexIndices.push(vertexIndex);
+				
 				textureIndices.push(textureIndex);
 				normalIndices.push(normalIndex);
 				
@@ -489,20 +244,75 @@ async function load3DObject(url) {
 
 
 	box.vertices = new Float32Array(vertices);
-	box.Fnormals = new Float32Array(normals);
-	box.FtexCoords = new Float32Array(texCoords);
-
 	box.normals = new Float32Array(Fnormals);
 	box.texCoords = new Float32Array(FtexCoords);
-
-	box.indices = new Uint16Array(FvertexIndex);
-	box.FindicesT = new Uint16Array(FtextureIndex);
-	box.FindicesN = new Uint16Array(FnormalIndex);
-	box.Findices = new Uint16Array(Findices);
   
 	return box;
 }
 
+async function load3DObject(url) {
+	var response = await fetch(url);
+	var objData = await response.text();
+	var lines = objData.split('\n');
+  
+	var vertices = [];
+	var normals = [];
+	var texCoords = [];
+  
+	for (var i = 0; i < lines.length; i++) {
+	  var line = lines[i].trim();
+	  var elements = line.split(' ');
+  
+	  if (elements[0] === 'v') { // Vertices
+		var x = parseFloat(elements[1]);
+		var y = parseFloat(elements[2]);
+		var z = parseFloat(elements[3]);
+  
+		vertices.push(x, y, z);
+	  }
+	  else if (elements[0] === 'vn') { // Normal
+		var nx = parseFloat(elements[1]);
+		var ny = parseFloat(elements[2]);
+		var nz = parseFloat(elements[3]);
+  
+		normals.push(nx, ny, nz);
+	  }
+	  else if (elements[0] === 'vt') { // Texture
+		var t1 = parseFloat(elements[1]);
+		var t2 = parseFloat(elements[2]);
+  
+		texCoords.push(t1, t2);
+	  }
+	  else if (elements[0] === 'f') { // Faces
+		var FtextureIndex = [];
+		var FnormalIndex = [];
+  
+		for (var j = 1; j < elements.length; j++) {
+		  var faceElement = elements[j].split('/');
+		  var vertexIndex = parseInt(faceElement[0]) - 1;
+		  var textureIndex = parseInt(faceElement[1]) - 1;
+		  var normalIndex = parseInt(faceElement[2]) - 1;
+  
+		  if (textureIndex >= 0) {
+			FtextureIndex.push(textureIndex);
+		  }
+  
+		  if (normalIndex >= 0) {
+			FnormalIndex.push(normalIndex);
+		  }
+		}
+	  }
+	}
+  
+	var box = {
+	  vertices: new Float32Array(vertices),
+	  normals: new Float32Array(normals),
+	  texCoords: new Float32Array(texCoords)
+	};
+  
+	return box;
+  }
+  
 
 function rotateX(a) { return math.matrix([  
 								[1,               0,             0,   0],
