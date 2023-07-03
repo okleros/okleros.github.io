@@ -72,5 +72,5 @@ void main()
 
     vec4 texColor = vec4(min(u_stackPos * 0.4, 1.0), min(u_stackPos, 1.0), min(0.3 + u_stackPos / 2.0, 1.0), 1.0);
     // gl_FragColor[3] = 1.0;
-    gl_FragColor = vec4((max((1.0 - (u_stackPos * 0.7)), 0.4) * ambient + 0.2 * diffuse/* + 0.8 * point + 0.2 * specular*/) * texColor.rgb, texColor.a);
+    gl_FragColor = vec4((max((1.0 - (u_stackPos * 0.7)), 0.4) * ambient + 0.2 * diffuse + 0.8 * point + 0.2 * specular) * texColor.rgb, texColor.a);
 }
