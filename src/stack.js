@@ -17,20 +17,24 @@ var
 		currentDir = "z";
 		stack = [],
 		angle = 0.0,
-		freqRot = 1.0,
-		n = 25;
+		moveRate = 1.0, 
+		speed = 20
+;
 
-stack.push([[ 0.0, 1.20,  0.0], [1.0, 1.0, 1.0], stackPos]);
-stack.push([[ 0.0, 1.50, -3.0], [1.0, 1.0, 1.0], stackPos]);
+stack.push([[0.0, 1.20,  0.0], [1.0, 1.0, 1.0], stackPos]);
+stack.push([[0.0, 1.50, -3.0], [1.0, 1.0, 1.0], stackPos]);
 
 const loadImage = path => {
   return new Promise((resolve, reject) => {
     const img = new Image()
+    
     img.crossOrigin = 'Anonymous' // to avoid CORS if used with Canvas
     img.src = path
+    
     img.onload = () => {
       resolve(img)
     }
+    
     img.onerror = e => {
       reject(e)
     }
@@ -39,33 +43,35 @@ const loadImage = path => {
 
 window.addEventListener('keydown', function(event) {
   // ...
-  if (event.key === ' ' && freqRot != 0) {
+  if (event.key === ' ' && moveRate != 0) {
   	// affectedByPhysics = true;
 
-  	// freqRot = 0;
-  	camPos[1] += 0.29;
-  	camLookAt[1] += 0.29;
-  	camUp[1] += 0.29;
+  	// moveRate = 0;
+  	camPos[1] += 0.33;
+  	camLookAt[1] += 0.33;
+  	camUp[1] += 0.33;
 
   	const topp = stack[stack.length - 1]
 
   	stackPos++;
 
+  	if (stackPos % 2 == 0) { speed -= 0.5; speed = math.max(speed, 1)}
+
   	if (currentDir === "z") {
-  		stack.push([[-3.0, topp[0][1] + 0.3,  0.0], [topp[1][0], topp[1][1], topp[1][2] * 0.9], stackPos]);
+  		stack.push([[-3.0, topp[0][1] + 0.33,  0.0], [topp[1][0], topp[1][1], topp[1][2]/* * 0.9*/], stackPos]);
   		currentDir = "x";
 
   	} else if (currentDir === "x") {
-  		stack.push([[ 0.0, topp[0][1] + 0.3, -3.0], [topp[1][0] * 0.9, topp[1][1], topp[1][2]], stackPos]);
+  		stack.push([[ 0.0, topp[0][1] + 0.33, -3.0], [topp[1][0]/* * 0.9*/, topp[1][1], topp[1][2]], stackPos]);
   		currentDir = "z";
 
   	}
 
 
-  	stack = stack.slice(-8);
+  	stack = stack.slice(-10);
 
   	configCam();
-  } else if (event.key === ' ' &&freqRot == 0) { freqRot = 1; affectedByPhysics = false;}
+  } else if (event.key === ' ' &&moveRate == 0) { moveRate = 1; affectedByPhysics = false;}
 });
 
 function resizeCanvas() {
@@ -146,7 +152,7 @@ async function configScene() {
 
 	diffuse = {
 		color: [1.0, 1.0, 1.0],
-		direction: [-1.0, 0.0, -1.0]
+		direction: [-1.0, -1.0, -1.0]
 	};
 
 	specular = {
@@ -175,7 +181,7 @@ async function configScene() {
 	const u_shininess = gl.getUniformLocation(prog, "u_shininess");
 	gl.uniform1f(u_shininess, specular.shininess);
 	
-	boxGeometry = await load3DObject("/models/shaded_box.obj");
+	boxGeometry = await load3DObject("/models/flat_box.obj");
 
 	initTexture();
 	loop();
@@ -190,12 +196,15 @@ function draw3DObject(object, info) {
 
 	const u_invTranspModelMatrix = gl.getUniformLocation(prog, "u_invTranspModelMatrix");
 	const u_MVPMatrix = gl.getUniformLocation(prog, "u_MVPMatrix");
+
+	const pivot = object.vertices.slice(0, 3);
+	const pivotMatrix = translate(-pivot[0], -pivot[1], -pivot[2]);
 	
 	const pos = info[0];
 	const scalef = info[1];
 
 	const translation = translate(pos[0], pos[1], pos[2]);
-	const scaling = scale(scalef[0], scalef[1], scalef[2]);
+	const scaling = math.multiply(pivotMatrix, scale(scalef[0], scalef[1], scalef[2]), math.inv(pivotMatrix));
 
 	const modelMatrix = math.multiply(translation, scaling);
 	
@@ -277,17 +286,17 @@ function loop() {
 	var top = stack[stack.length - 1];
 
 	if (currentDir === "z") {
-		top[0][2] += freqRot / 10;
+		top[0][2] += moveRate / speed;
 
 		if (math.abs(top[0][2]) >= 3.1) {
-			freqRot *= -1;
+			moveRate *= -1;
 		}
 	
 	} else if (currentDir === "x") {
-		top[0][0] += freqRot / 10;
+		top[0][0] += moveRate / speed;
 
 		if (math.abs(top[0][0]) >= 3.1) {
-			freqRot *= -1;
+			moveRate *= -1;
 		}
 	}
 	
