@@ -293,7 +293,7 @@ function loop() {
 		}
 	}
 	
-	specular.position = [top[0][0], top[0][1] + 1.0, top[0][2]];
+	specular.position = [top[0][0], top[0][1] + 5.0, top[0][2]];
 
 	for (var i = 0; i < stack.length; i++) {
 		draw3DObject(boxGeometry, stack[i]);
