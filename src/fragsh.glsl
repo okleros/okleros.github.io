@@ -25,28 +25,6 @@ vec4 rgb2hsv(vec4 c)
     return vec4(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x, c.a);
 }
 
-vec4 blur(sampler2D tex, vec2 texCoord)
-{
-    const int neighborhoodSize = 8;
-    const float neighborhoodSize_f = float(neighborhoodSize);
-    const int neighborSize = neighborhoodSize / 2;
-    const float texelSize = 1.0 / 512.0/*  textureSize(tex, 0) + 1e-10 */; // Calculate the size of a texel (pixel)
-    vec4 sum = vec4(0.0);
-    
-    for (int i = -neighborSize; i <= neighborSize; i++)
-    {
-        for (int j = -neighborSize; j <= neighborSize; j++)
-        {
-            vec2 offset = vec2(i, j) * texelSize;
-            sum += texture2D(tex, texCoord + offset);
-        }
-    }
-    
-    vec4 averageColor = sum / float((2 * neighborSize + 1) * (2 * neighborSize + 1)); // Divide the sum by 9 to get the average
-    
-    return averageColor;
-}
-
 void main()
 {
     vec2 normalizedFragCoord = gl_FragCoord.xy / vec2(640, 480);
@@ -72,5 +50,5 @@ void main()
 
     vec4 texColor = vec4(min(u_stackPos * 0.4, 1.0), min(u_stackPos, 1.0), min(0.3 + u_stackPos / 2.0, 1.0), 1.0);
     // gl_FragColor[3] = 1.0;
-    gl_FragColor = vec4((max((1.0 - (u_stackPos * 0.7)), 0.4) * ambient + 0.2 * diffuse + 0.8 * point + 0.2 * specular) * texColor.rgb, texColor.a);
+    gl_FragColor = vec4((max((1.0 - (u_stackPos * 0.7)), 0.4) * ambient + 0.2 * diffuse + 0.6 * point + specular) * texColor.rgb, texColor.a);
 }
