@@ -226,7 +226,7 @@ function addLayer(info)
 
  	stackPos++;
 
- 	if (stackPos % 2 == 0)
+ 	if (stackPos % 3 == 0)
  		speed -= 0.5;
 
  	speed = math.max(speed, 2.0);
@@ -451,6 +451,16 @@ function drawScore()
 	angle += 1.5;
 }
 
+function handleEvent()
+{
+	const success = checkOverlap();
+
+	if (!success)
+	{
+		endGame();
+	}
+}
+
 function loop() 
 {
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -470,14 +480,9 @@ function loop()
 
 window.addEventListener('keydown', function(event) 
 {
-  if (event.key === ' ' && moveRate != 0) 
+  if (event.key === ' ') 
   {
-  	const success = checkOverlap();
-
-  	if (!success)
-  	{
-  		endGame();
-  	}
+  	handleEvent();
   }
 
   if (event.key === 'r')
@@ -486,8 +491,10 @@ window.addEventListener('keydown', function(event)
   }
 });
 
+window.addEventListener('mousedown', handleEvent);
+window.addEventListener('touchend', handleEvent);
+
 function endGame()
 {
 	reset();
-	// cancelAnimationFrame(loop);
 }
