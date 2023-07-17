@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="stylesheet" type="text/css" href="./style.css">
+	<link rel="stylesheet" type="text/css" href="./style.css?ofofihoi">
 
 	<title>CG1 WebGL</title>
 </head>
@@ -13,6 +13,9 @@
 <script src = "https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.1/math.js" integrity="sha512-5nftKkjZO1gtHEWFlUGXi/vuXzFnWTom549IH/gMqOiJHcPfH5z/1DO8/c0qnoG0R8RCVLOeBDXhCjg2+23nqQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
 <body onload="setup()">
-	<canvas id="glcanvas" width="800", height="600"></canvas>
+	<div id="canvas-wrap">
+		<canvas id="glcanvas" width="800", height="600"></canvas>
+		<h1 id="score"></h1>
+	</div>
 </body>
 </html>

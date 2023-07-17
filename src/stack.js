@@ -19,7 +19,8 @@ let
 		overhangs = [],
 		angle = 0.0,
 		moveRate = 1.0, 
-		speed = 20
+		speed = 20,
+		score = 0;
 ;
 
 const loadImage = path => 
@@ -106,7 +107,8 @@ function reset()
 
 	stackPos = 1;
 	stack = [];
-	overhangs = [];
+
+	document.getElementById('score').innerHTML = (stackPos - 1).toString().padStart(2, '0');
 
 	stack.push({
 		translation: [0.0, 1.20,  0.0],
@@ -159,22 +161,6 @@ function checkOverlap()
 		addLayer(nextBox);
 
 		return true;
-		/*const overhangShift = (out_overlap / 2 + overhangSize / 2) * math.sign(delta);
-    
-    const overhangX =
-      direction === "x"
-        ? topLayer.translation[0] + overhangShift
-        : topLayer.translation[0];
-    
-    const overhangZ =
-      direction === "z"
-        ? topLayer.translation[2] + overhangShift
-        : topLayer.translation[2];
-    
-    const overhangWidth = direction == "x" ? overhangSize : topLayer.scaling[0];
-    const overhangDepth = direction == "z" ? overhangSize : topLayer.scaling[2];*/
-
-
 	}
 	else
 		return false;
@@ -195,7 +181,6 @@ function cutBox(overlap, delta)
   topLayer.scaling[2] = newDepth;
 
   topLayer.scaling[dir] = overlap;
-  // topLayer.translation[dir] -= delta / 2;
 
   var newTop = JSON.parse(JSON.stringify(topLayer));
 
@@ -218,9 +203,9 @@ function addLayer(info)
 
 	flipCurrentDir();
 
-	camPos[1] += 0.3;
-	camLookAt[1] += 0.3;
-  camUp[1] += 0.3;
+	camPos = math.multiply(translate(0.0, 0.3, 0.0), [...camPos, ...[1]]).toArray().slice(0, 3);
+	camLookAt = math.multiply(translate(0.0, 0.3, 0.0), [...camLookAt, ...[1]]).toArray().slice(0, 3);
+  camUp = math.multiply(translate(0.0, 0.3, 0.0), [...camUp, ...[1]]).toArray().slice(0, 3);
 
   configCam();
 
@@ -233,9 +218,11 @@ function addLayer(info)
 
  	info.stackPos = stackPos;
 
+ 	document.getElementById('score').innerHTML = (stackPos - 1).toString().padStart(2, '0');
+
  	stack.push(info);
 
-  stack = stack.slice(-5);
+  stack = stack.slice(-6);
 }
 
 function resetCam() 
@@ -271,7 +258,7 @@ async function configScene()
 
 	specular = 
 	{
-		color: [1.0, 1.0, 1.0] /*[0.6549019608, 0.7803921569, 0.9058823529]*/ /*[0.0, 1.0, 1.0]*/,
+		color: [1.0, 1.0, 1.0],
 		position: lightPos,
 		shininess: 50
 	};
@@ -369,15 +356,10 @@ function draw3DObject(object, info, textured)
 	var a_texCoord = gl.getAttribLocation(prog, "a_texCoord");
 	gl.enableVertexAttribArray(a_texCoord);
 	gl.vertexAttribPointer(a_texCoord, 2, gl.FLOAT, false, 0, 0);
-	// Bind index buffer
-	// var indexBuffer = gl.createBuffer();
-	// gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-	// gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, object.indices, gl.STATIC_DRAW);
 
-	gl.drawArrays(gl.TRIANGLES, 0, object.indices.length/*, gl.UNSIGNED_SHORT, 0*/);
+	gl.drawArrays(gl.TRIANGLES, 0, object.indices.length);
 
 	gl.deleteBuffer(normalBuffer);
-	// gl.deleteBuffer(indexBuffer);
 	gl.deleteBuffer(vertexBuffer);
 	gl.deleteBuffer(texCoordBuffer);
 }
@@ -415,16 +397,16 @@ function moveTopLayer()
 	{
 		top.translation[2] += moveRate / speed;
 
-		if (math.abs(top.translation[2]) >= 3.1) 
-			moveRate *= -1;
+		if (math.abs(top.translation[2]) >= 3.01) 
+			endGame();
 	
 	}
 	else if (currentDir === "x") 
 	{
 		top.translation[0] += moveRate / speed;
 
-		if (math.abs(top.translation[0]) >= 3.1) 
-			moveRate *= -1;
+		if (math.abs(top.translation[0]) >= 3.01) 
+			endGame();
 	
 	}
 }
@@ -445,10 +427,10 @@ function drawBoxes()
 	}
 }
 
-function drawScore()
+function drawScoreCube()
 {
 	draw3DObject(plumbobGeometry, {translation: [0.9, camPos[1] - 1.4, -1.0], scaling: [0.04, 0.04, 0.04], rotation: [0.0, -angle, angle], stackPos: -1}, true);
-	angle += 1.5;
+	angle += 2.5;
 }
 
 function handleEvent()
@@ -471,7 +453,7 @@ function loop()
 
 	drawBoxes();
 
-	drawScore();
+	drawScoreCube();
 
 	configCam();
 
@@ -496,5 +478,6 @@ window.addEventListener('touchstart', handleEvent);
 
 function endGame()
 {
+	console.log(stackPos - 1);
 	reset();
 }
