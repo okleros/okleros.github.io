@@ -214,7 +214,6 @@ async function load3DObject(url) {
 				FnormalIndex.push(normalIndex);
 			}
 
-			// console.log(textureIndices.length);
 			for (var k = 0; k < textureIndices.length; k += 1) {
 				var textureIndex = textureIndices[k];
 		
@@ -255,7 +254,6 @@ async function load3DObject(url) {
 	  }
 	}
 	
-	console.log(textureIndices);
 	var box = {
 		vertices: new Float32Array(Fvertices),
 		indices: new Uint16Array(FvertexIndex),
@@ -290,6 +288,10 @@ function rotateZ(a) { return math.matrix([
 																		]);}
 
 function rotate(x, y, z) {
+	x = rad(x);
+	y = rad(y);
+	z = rad(z);
+
 	const rot = math.multiply(rotateY(y), rotateZ(z));
 
 	return math.multiply(rotateX(x), rot);

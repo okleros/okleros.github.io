@@ -1,4 +1,4 @@
-var 
+let 
 		gl,
 		prog,
 		camera,
@@ -16,6 +16,7 @@ var
 		affectedByPhysics,
 		currentDir = "z";
 		stack = [],
+		overhangs = [],
 		angle = 0.0,
 		moveRate = 1.0, 
 		speed = 20
@@ -41,50 +42,6 @@ const loadImage = path =>
     }
   })
 }
-
-window.addEventListener('keydown', function(event) 
-{
-  // ...
-  if (event.key === ' ' && moveRate != 0) 
-  {
-  	// affectedByPhysics = true;
-
-  	// moveRate = 0;
-  	camPos[1] += 0.33;
-  	camLookAt[1] += 0.33;
-  	camUp[1] += 0.33;
-
-  	const topp = stack[stack.length - 1]
-
-  	stackPos++;
-
-  	if (stackPos % 2 == 0) 
-  		{ speed -= 0.5; speed = math.max(speed, 1)}
-
-  	if (currentDir === "z") 
-  	{
-  		stack.push([[-3.0, topp[0][1] + 0.33,  0.0], [topp[1][0], topp[1][1], topp[1][2]/* * 0.9*/], stackPos]);
-  		currentDir = "x";
-
-  	} else if (currentDir === "x") 
-  	{
-  		stack.push([[ 0.0, topp[0][1] + 0.33, -3.0], [topp[1][0]/* * 0.9*/, topp[1][1], topp[1][2]], stackPos]);
-  		currentDir = "z";
-
-  	}
-
-
-  	stack = stack.slice(-5);
-
-  	configCam();
-  } else if (event.key === ' ' && moveRate == 0) 
-  { moveRate = 1; affectedByPhysics = false;}
-
-  if (event.key === 'r')
-  {
-  	reset();
-  }
-});
 
 function resizeCanvas() 
 {
@@ -149,9 +106,21 @@ function reset()
 
 	stackPos = 1;
 	stack = [];
+	overhangs = [];
 
-	stack.push([[0.0, 1.20,  0.0], [1.0, 1.0, 1.0], stackPos]);
-	stack.push([[0.0, 1.50, -3.0], [1.0, 1.0, 1.0], stackPos]);
+	stack.push({
+		translation: [0.0, 1.20,  0.0],
+		scaling: [1.0, 1.0, 1.0],
+		rotation: [0.0, 0.0, 0.0],
+		stackPos: stackPos
+	});
+
+	stack.push({
+		translation: [0.0, 1.50,  -3.0],
+		scaling: [1.0, 1.0, 1.0],
+		rotation: [0.0, 0.0, 0.0],
+		stackPos: stackPos
+	});
 
 	currentDir = "z";
 	angle = 0.0;
@@ -159,14 +128,109 @@ function reset()
 	speed = 20;
 }
 
-function overlap()
+function checkOverlap()
 {
-	// continue;
+	const topLayer = stack[stack.length - 1];
+	const previousLayer = stack[stack.length - 2];
+
+	const direction = currentDir;
+
+	var delta;
+	var size;
+
+	if (currentDir === "x")
+	{
+		delta = topLayer.translation[0] - previousLayer.translation[0];
+		size = topLayer.scaling[0];
+	}
+	else
+	{
+		delta = topLayer.translation[2] - previousLayer.translation[2];
+		size = topLayer.scaling[2];
+	}
+
+	const overhangSize = math.abs(delta);
+	const out_overlap = size - overhangSize;
+
+	if (out_overlap > 0)
+	{
+		const nextBox = cutBox(out_overlap, delta);
+
+		addLayer(nextBox);
+
+		return true;
+		/*const overhangShift = (out_overlap / 2 + overhangSize / 2) * math.sign(delta);
+    
+    const overhangX =
+      direction === "x"
+        ? topLayer.translation[0] + overhangShift
+        : topLayer.translation[0];
+    
+    const overhangZ =
+      direction === "z"
+        ? topLayer.translation[2] + overhangShift
+        : topLayer.translation[2];
+    
+    const overhangWidth = direction == "x" ? overhangSize : topLayer.scaling[0];
+    const overhangDepth = direction == "z" ? overhangSize : topLayer.scaling[2];*/
+
+
+	}
+	else
+		return false;
+
+}
+
+function cutBox(overlap, delta)
+{
+  var topLayer = stack[stack.length - 1];
+
+	const direction = currentDir;
+  const newWidth = direction == "x" ? overlap : topLayer.scaling[0];
+  const newDepth = direction == "z" ? overlap : topLayer.scaling[2];
+
+  const dir = direction == "x" ? 0 : 2;
+
+  topLayer.scaling[0] = newWidth;
+  topLayer.scaling[2] = newDepth;
+
+  topLayer.scaling[dir] = overlap;
+  // topLayer.translation[dir] -= delta / 2;
+
+  var newTop = JSON.parse(JSON.stringify(topLayer));
+
+  return newTop;
+}
+
+function flipCurrentDir()
+{
+	currentDir = currentDir === "x" ? "z" : "x";
 }
 
 function addLayer(info)
 {
-	// continue;
+	info.translation[1] += 0.3;
+
+	if (currentDir === "z")
+		info.translation[0] = -3;
+	else
+		info.translation[2] = -3;
+
+	flipCurrentDir();
+
+	camPos[1] += 0.3;
+	camLookAt[1] += 0.3;
+  camUp[1] += 0.3;
+
+  configCam();
+
+ 	stackPos++;
+
+ 	info.stackPos = stackPos;
+
+ 	stack.push(info);
+
+  stack = stack.slice(-5);
 }
 
 function resetCam() 
@@ -230,8 +294,6 @@ async function configScene()
 	boxGeometry = await load3DObject("/models/flat_box.obj");
 	plumbobGeometry = await load3DObject("/models/cube.obj");
 
-	console.log(plumbobGeometry);
-
 	initTexture();
 	reset();
 	loop();
@@ -240,7 +302,7 @@ async function configScene()
 function draw3DObject(object, info, textured) 
 {
 	const u_stackPos = gl.getUniformLocation(prog, "u_stackPos");
-	gl.uniform1f(u_stackPos, info[2] / 50.0);
+	gl.uniform1f(u_stackPos, info.stackPos / 50.0);
 
 	const u_lightPosition = gl.getUniformLocation(prog, "u_lightPosition");
 	gl.uniform3fv(u_lightPosition, specular.position);
@@ -253,13 +315,15 @@ function draw3DObject(object, info, textured)
 	const pivot = object.vertices.slice(0, 3);
 	const pivotMatrix = translate(-pivot[0], -pivot[1], -pivot[2]);
 	
-	const pos = info[0];
-	const scalef = info[1];
+	const pos = info.translation;
+	const scalef = info.scaling;
+	const rotationf = info.rotation;
 
 	const translation = translate(pos[0], pos[1], pos[2]);
 	const scaling = math.multiply(pivotMatrix, scale(scalef[0], scalef[1], scalef[2]), math.inv(pivotMatrix));
+	const rotation = rotate(rotationf[0], rotationf[1], rotationf[2]);
 
-	const modelMatrix = math.multiply(translation, scaling);
+	const modelMatrix = math.multiply(translation, scaling, rotation);
 
 	if (textured)
 		gl.uniform1i(u_textured, true);
@@ -328,16 +392,11 @@ async function initTexture()
 	const tex = gl.createTexture();
 	gl.bindTexture(gl.TEXTURE_2D, tex);
 
-	// gl.activeTexture(gl.TEXTURE0);
-
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture);
-	gl.generateMipmap(gl.TEXTURE_2D);
-
-
 	
 	const texPtr = gl.getUniformLocation(prog, "u_tex");
 	gl.uniform1i(texPtr, 0);
@@ -351,31 +410,56 @@ function loop()
 
 	if (currentDir === "z") 
 	{
-		top[0][2] += moveRate / speed;
+		top.translation[2] += moveRate / speed;
 
-		if (math.abs(top[0][2]) >= 3.1) 
+		if (math.abs(top.translation[2]) >= 3.1) 
 			moveRate *= -1;
 	
 	}
 	else if (currentDir === "x") 
 	{
-		top[0][0] += moveRate / speed;
+		top.translation[0] += moveRate / speed;
 
-		if (math.abs(top[0][0]) >= 3.1) 
+		if (math.abs(top.translation[0]) >= 3.1) 
 			moveRate *= -1;
 	
 	}
 	
-	specular.position = [top[0][0], top[0][1] + 5, top[0][2]];
+	specular.position = [top.translation[0], top.translation[1] + 5, top.translation[2]];
 
 	for (var i = 0; i < stack.length; i++) 
 	{
 		draw3DObject(boxGeometry, stack[i], false);
 
 	}
-		draw3DObject(plumbobGeometry, [[0.9, 4.5, -1.0], [0.05, 0.05, 0.05], 1], true);
+	draw3DObject(plumbobGeometry, {translation: [0.9, camPos[1] - 1.4, -1.0], scaling: [0.04, 0.04, 0.04], rotation: [0.0, -angle, angle], stackPos: 1}, true);
+	angle += 1.5;
 
 	configCam();
 
 	requestAnimationFrame(loop);
+}
+
+window.addEventListener('keydown', function(event) 
+{
+  if (event.key === ' ' && moveRate != 0) 
+  {
+  	const success = checkOverlap();
+
+  	if (!success)
+  	{
+  		endGame();
+  	}
+  }
+
+  if (event.key === 'r')
+  {
+  	reset();
+  }
+});
+
+function endGame()
+{
+	reset();
+	// cancelAnimationFrame(loop);
 }
