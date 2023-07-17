@@ -492,7 +492,7 @@ window.addEventListener('keydown', function(event)
 });
 
 window.addEventListener('mousedown', handleEvent);
-window.addEventListener('touchend', handleEvent);
+window.addEventListener('touchstart', handleEvent);
 
 function endGame()
 {
