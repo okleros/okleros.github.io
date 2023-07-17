@@ -226,6 +226,11 @@ function addLayer(info)
 
  	stackPos++;
 
+ 	if (stackPos % 2 == 0)
+ 		speed -= 0.5;
+
+ 	speed = math.max(speed, 2.0);
+
  	info.stackPos = stackPos;
 
  	stack.push(info);
@@ -402,10 +407,8 @@ async function initTexture()
 	gl.uniform1i(texPtr, 0);
 }
 
-function loop() 
+function moveTopLayer()
 {
-	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
 	var top = stack[stack.length - 1];
 
 	if (currentDir === "z") 
@@ -424,16 +427,41 @@ function loop()
 			moveRate *= -1;
 	
 	}
-	
-	specular.position = [top.translation[0], top.translation[1] + 5, top.translation[2]];
+}
 
+function updateLighting()
+{
+	var top = stack[stack.length - 1];
+
+	specular.position = [top.translation[0], top.translation[1] + 5, top.translation[2]];
+}
+
+function drawBoxes()
+{
 	for (var i = 0; i < stack.length; i++) 
 	{
 		draw3DObject(boxGeometry, stack[i], false);
 
 	}
-	draw3DObject(plumbobGeometry, {translation: [0.9, camPos[1] - 1.4, -1.0], scaling: [0.04, 0.04, 0.04], rotation: [0.0, -angle, angle], stackPos: 1}, true);
+}
+
+function drawScore()
+{
+	draw3DObject(plumbobGeometry, {translation: [0.9, camPos[1] - 1.4, -1.0], scaling: [0.04, 0.04, 0.04], rotation: [0.0, -angle, angle], stackPos: -1}, true);
 	angle += 1.5;
+}
+
+function loop() 
+{
+	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+	moveTopLayer();
+	
+	updateLighting();
+
+	drawBoxes();
+
+	drawScore();
 
 	configCam();
 
