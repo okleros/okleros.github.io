@@ -215,13 +215,13 @@ async function load3DObject(url) {
 			}
 
 			// console.log(textureIndices.length);
-			for (var k = 0; k < textureIndices.length; k += 2) {
+			for (var k = 0; k < textureIndices.length; k += 1) {
 				var textureIndex = textureIndices[k];
 		
 				// Acesso às coordenadas de textura
 				var texCoord = [
 				  texCoords[(textureIndex) * 2],     
-				  texCoords[(textureIndex) * 2 + 1]  
+				  1 - texCoords[(textureIndex) * 2 + 1]  
 				];
 				FtexCoords.push(...texCoord);
 			}
@@ -240,15 +240,29 @@ async function load3DObject(url) {
 				Fnormals.push(...normal);
 			}
 
+			for (var k = 0; k < vertexIndices.length; k += 1) {
+				var vertexIndex = vertexIndices[k];
+		
+				// Acesso aos normais
+				var vertex = [
+				  vertices[vertexIndex * 3],       
+				  vertices[vertexIndex * 3 + 1],    
+				  vertices[vertexIndex * 3 + 2]     
+				];
+				
+				Fvertices.push(...vertex);
+			}
 	  }
 	}
 	
+	console.log(textureIndices);
 	var box = {
-		vertices: new Float32Array(vertices),
+		vertices: new Float32Array(Fvertices),
 		indices: new Uint16Array(FvertexIndex),
 		normals: new Float32Array(Fnormals),
 		texCoords: new Float32Array(FtexCoords)
 	};
+
   
 	return box;
 }
