@@ -71,8 +71,8 @@ function setup()
 
 	if (gl) 
 	{
-		const vtxshSource = loadSource("src/vtxsh.glsl");
-		const fragshSource = loadSource("src/fragsh.glsl");
+		const vtxshSource = loadSource("./src/vtxsh.glsl");
+		const fragshSource = loadSource("./src/fragsh.glsl");
 
 		const vtxsh = createShader(gl, gl.VERTEX_SHADER, vtxshSource);
 		const fragsh = createShader(gl, gl.FRAGMENT_SHADER, fragshSource);
@@ -283,8 +283,8 @@ async function configScene()
 	const u_shininess = gl.getUniformLocation(prog, "u_shininess");
 	gl.uniform1f(u_shininess, specular.shininess);
 	
-	boxGeometry = await load3DObject("/models/flat_box.obj");
-	plumbobGeometry = await load3DObject("/models/cube.obj");
+	boxGeometry = await load3DObject("./models/flat_box.obj");
+	plumbobGeometry = await load3DObject("./models/cube.obj");
 
 	initTexture();
 	reset();
