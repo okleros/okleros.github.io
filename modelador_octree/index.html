@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Modelador</title>
+
+    <link rel="stylesheet" type="text/css" href="style.css">
+
+    <script src="lib/p5.min.js"></script>
+    <script src="lib/p5.sound.min.js"></script>
+
+  </head>
+
+  <body>
+    <div id="panel"></div>
+    <div id="canvas-container"></div>
+    <div id="side-panel">
+        <p class="side">View</p>
+        <div id="view-settings" class="side"></div>
+        <p class="side">Load Model</p>
+        <div id="load-model" class="side"></div>
+        <p class="side">Add Primitive</p>
+        <div id="add-primitive" class="side"></div>
+        <p class="side">Scene</p>
+        <div id="scene" class="side"></div>
+        <p class="side">Object</p>
+        <div id="object-visible" class="side"></div>
+        <p></p>
+        <div id="object" class="side"></div>
+        <p class="side">Octree</p>
+        <div id="octree" class="side">
+            <div>Depth</div>
+        </div>
+        <div id="octree-generate" class="side"></div>
+    </div>
+    <script src="classes/Point.js"></script>
+    <script src="classes/Matrix.js"></script>
+    <script src="classes/Primitive.js"></script>
+    <script src="classes/ModelObject.js"></script>
+    <script src="classes/Primitives/Box.js"></script>
+    <script src="classes/Primitives/Sphere.js"></script>
+    <script src="classes/Primitives/Cylinder.js"></script>
+    <script src="classes/Primitives/Cone.js"></script>
+    <script src="classes/Primitives/Torus.js"></script>
+    <script src="classes/Primitives/Pyramid.js"></script>
+    <script src="classes/Octree.js"></script>
+    <script src="sketch.js"></script>
+  </body>
+</html>

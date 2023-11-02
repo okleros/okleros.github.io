@@ -1,0 +1,37 @@
+body {
+    background-color: #181818;
+    color: white;
+    font-size: 18px;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+}
+div {
+    margin: 1%;
+    flex: 1;
+}
+canvas {
+    user-select: none;
+    border-width: 2px;
+    border-color: #909090;
+    border-radius: 2px;
+    border-style: dashed;
+}
+#canvas-container {
+    float: left;
+}
+
+#side-panel { 
+    margin: auto;
+    flex-direction: row;
+    padding: 0px;
+}
+
+.side { 
+    display: flex;
+    margin: auto;
+    flex-direction: row;
+    padding: 10px;
+}
